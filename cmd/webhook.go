@@ -1,0 +1,21 @@
+package cmd
+
+import (
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"github.com/openlab-red/mutating-webhook-vault-agent/webhook"
+)
+
+var handlerCmd = &cobra.Command{
+	Use:   "start",
+	Short: "Start webhook webserver",
+	Long:  `Start webhook webserver`,
+	Run: func(cmd *cobra.Command, args []string) {
+		webhook.Start()
+	},
+}
+
+func init() {
+	RootCmd.AddCommand(handlerCmd)
+	viper.SetDefault("log-level", "INFO")
+}
