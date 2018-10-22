@@ -31,6 +31,7 @@ type Config struct {
 
 func (wk *WebHook) mutate(context *gin.Context) {
 
+	log.Println(context.Request.Method)
 	var admissionResponse *v1beta1.AdmissionResponse
 	ar := v1beta1.AdmissionReview{}
 
