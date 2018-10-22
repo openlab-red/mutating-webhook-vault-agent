@@ -8,3 +8,5 @@ WORKDIR $GOPATH/src/github.com/openlab-red/mutating-webhook-vault-agent/
 COPY Gopkg.toml Gopkg.lock ./
 
 RUN dep ensure --vendor-only
+
+USER 1001
