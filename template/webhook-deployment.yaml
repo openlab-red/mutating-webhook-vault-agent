@@ -25,6 +25,8 @@ spec:
       containers:
       - image: vault-agent-webhook:latest
         name: vault-agent-webhook
+        args:
+        - start
         ports:
         - containerPort: 8080
           protocol: TCP
