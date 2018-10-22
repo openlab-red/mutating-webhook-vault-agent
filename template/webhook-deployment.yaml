@@ -1,0 +1,44 @@
+---
+apiVersion: v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    app: vault-agent-webhook
+  name: vault-agent-webhook
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: vault-agent-webhook
+    spec:
+      containers:
+      - image: vault-agent-webhook:latest
+        name: vault-agent-webhook
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        volumeMounts:
+        - name: vault-agent-webhook-cert
+          mountPath: /var/run/secrets/kubernetes.io/certs
+        - name: vault-agent-webhook-config
+          mountPath: /var/run/secrets/kubernetes.io/config
+        livenessProbe:
+          httpGet:
+            path: '/health'
+            port: 8080
+            scheme: HTTPS
+        readinessProbe:
+          httpGet:
+            path: '/health'
+            port: 8080
+            scheme: HTTPS
+        securityContext:
+          privileged: true
+      volumes:
+      - name: vault-agent-webhook-cert
+        secret:
+          secretName: vault-agent-webhook-cert
+      - name: vault-agent-webhook-config
+        configMap:
+          name: vault-agent-webhook

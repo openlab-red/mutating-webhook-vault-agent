@@ -8,8 +8,8 @@ import (
 
 var handlerCmd = &cobra.Command{
 	Use:   "start",
-	Short: "Start webhook webserver",
-	Long:  `Start webhook webserver`,
+	Short: "Start webhook server",
+	Long:  `Start webhook server`,
 	Run: func(cmd *cobra.Command, args []string) {
 		webhook.Start()
 	},
