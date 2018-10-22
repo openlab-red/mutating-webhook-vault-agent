@@ -9,6 +9,7 @@ import (
 	"context"
 	"time"
 	"syscall"
+	"github.com/spf13/viper"
 )
 
 func Start() {
@@ -23,14 +24,14 @@ func Start() {
 	}
 	engine.GET("/mutate", wk.mutate)
 
-	engine.RunTLS(":"+os.Getenv("PORT"), "/var/run/secrets/kubernetes.io/certs/tls.crt", "/var/run/secrets/kubernetes.io/certs/tls.key")
+	engine.RunTLS(":"+viper.GetString("port"), "/var/run/secrets/kubernetes.io/certs/tls.crt", "/var/run/secrets/kubernetes.io/certs/tls.key")
 
 	shutdown(engine)
 }
 
 func shutdown(engine *gin.Engine) {
 	srv := &http.Server{
-		Addr:    os.Getenv("PORT"),
+		Addr:    viper.GetString("port"),
 		Handler: engine,
 	}
 

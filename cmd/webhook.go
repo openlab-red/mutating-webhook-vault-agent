@@ -18,4 +18,5 @@ var handlerCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(handlerCmd)
 	viper.SetDefault("log-level", "INFO")
+	viper.SetDefault("port", "8080")
 }

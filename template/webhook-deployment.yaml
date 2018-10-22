@@ -15,7 +15,7 @@ spec:
           - vault-agent-webhook
         from:
           kind: ImageStreamTag
-          name: 'vault-agent-webhook:latest'
+          name: vault-agent-webhook:latest
   replicas: 1
   template:
     metadata:
@@ -25,9 +25,6 @@ spec:
       containers:
       - image: vault-agent-webhook:latest
         name: vault-agent-webhook
-        env:
-        - name: PORT
-          value: 8080
         ports:
         - containerPort: 8080
           protocol: TCP
@@ -38,12 +35,12 @@ spec:
           mountPath: /var/run/secrets/kubernetes.io/config
         livenessProbe:
           httpGet:
-            path: '/health'
+            path: /health
             port: 8080
             scheme: HTTPS
         readinessProbe:
           httpGet:
-            path: '/health'
+            path: /health
             port: 8080
             scheme: HTTPS
         securityContext:
