@@ -1,11 +1,11 @@
 apiVersion: admissionregistration.k8s.io/v1beta1
 kind: MutatingWebhookConfiguration
 metadata:
-  name: wvault-agent-webhook
+  name: vault-agent-webhook
   labels:
     app: vault-agent-webhook
 webhooks:
-  - name: vault-agent-webhook
+  - name: vault-agent.vaultproject.io
     clientConfig:
       service:
         name: vault-agent-webhook
