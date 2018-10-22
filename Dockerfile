@@ -1,6 +1,13 @@
-FROM go-artifact:latest AS builder
+FROM golang:1.11 AS builder
 
-WORKDIR $GOPATH/src/github.com/openlab-red/mutating-webhook-vault-agent/
+ADD https://github.com/golang/dep/releases/download/v0.5.0/dep-linux-amd64 /usr/bin/dep
+RUN chmod +x /usr/bin/dep
+
+WORKDIR $GOPATH/src/github.com/mutating-webhook-vault-agent
+
+COPY Gopkg.toml Gopkg.lock ./
+
+RUN dep ensure --vendor-only
 
 COPY . ./
 
