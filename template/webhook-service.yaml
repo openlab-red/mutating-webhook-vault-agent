@@ -9,6 +9,7 @@ metadata:
 spec:
   ports:
   - name: vault-agent-webhook
-    port: 8080
+    port: 443
+    targetPort: 8080
   selector:
     app: vault-agent-webhook
