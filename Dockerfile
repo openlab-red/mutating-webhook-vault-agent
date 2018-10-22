@@ -1,4 +1,4 @@
-FROM golang:1.11 AS builder
+FROM go-artifact:latest AS builder
 
 WORKDIR $GOPATH/src/github.com/openlab-red/mutating-webhook-vault-agent/
 
