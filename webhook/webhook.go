@@ -10,7 +10,6 @@ import (
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	"k8s.io/kubernetes/pkg/apis/core/v1"
 	"net/http"
-	"log"
 )
 
 var (

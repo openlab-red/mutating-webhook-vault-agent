@@ -57,3 +57,6 @@
 [[override]]
   name = "github.com/docker/distribution"
   branch = "master"
+[[constraint]]
+  branch = "master"
+  name = "github.com/gin-gonic/contrib"

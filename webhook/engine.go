@@ -3,18 +3,22 @@ package webhook
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"log"
 	"os"
 	"os/signal"
 	"context"
 	"time"
 	"syscall"
 	"github.com/spf13/viper"
+	"github.com/sirupsen/logrus"
+	"github.com/gin-gonic/contrib/ginrus"
 )
 
-func Start() {
+var log = logrus.New()
 
+func Start() {
 	var engine = gin.Default()
+
+	initLog(engine)
 
 	engine.GET("/health", Health)
 
@@ -27,6 +31,18 @@ func Start() {
 	engine.RunTLS(":"+viper.GetString("port"), "/var/run/secrets/kubernetes.io/certs/tls.crt", "/var/run/secrets/kubernetes.io/certs/tls.key")
 
 	shutdown(engine)
+}
+
+func initLog(engine *gin.Engine) {
+	level, err := logrus.ParseLevel(viper.GetString("log-level"))
+	if err != nil {
+		log.Fatalln(err)
+	} else {
+		log.Level = level
+	}
+
+	engine.Use(ginrus.Ginrus(log, time.RFC3339, true))
+
 }
 
 func shutdown(engine *gin.Engine) {
