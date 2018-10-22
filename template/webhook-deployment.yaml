@@ -6,6 +6,16 @@ metadata:
     app: vault-agent-webhook
   name: vault-agent-webhook
 spec:
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+          - vault-agent-webhook
+        from:
+          kind: ImageStreamTag
+          name: 'vault-agent-webhook:latest'
   replicas: 1
   template:
     metadata:
@@ -15,6 +25,9 @@ spec:
       containers:
       - image: vault-agent-webhook:latest
         name: vault-agent-webhook
+        env:
+        - name: PORT
+          value: 8080
         ports:
         - containerPort: 8080
           protocol: TCP
