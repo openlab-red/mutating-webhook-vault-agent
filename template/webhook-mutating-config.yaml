@@ -13,7 +13,7 @@ objects:
       clientConfig:
         service:
           name: vault-agent-webhook
-          namespace: hashicorp
+          namespace: hashicorp-vault
           path: "/mutate"
         caBundle: ${CA_BUNDLE}
       rules:
