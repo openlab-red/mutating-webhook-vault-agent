@@ -10,16 +10,19 @@ import (
 func Pod(raw []byte, pod *corev1.Pod) (*v1beta1.AdmissionResponse) {
 
 	if err := json.Unmarshal(raw, &pod); err != nil {
-
 		log.Errorf("Could not Unmarshal raw object: %v", err)
-		return &v1beta1.AdmissionResponse{
-			Result: &metav1.Status{
-				Message: err.Error(),
-			},
-		}
+		return ToAdmissionResponse(err)
 	}
 
 	return nil
+}
+
+func ToAdmissionResponse(err error) *v1beta1.AdmissionResponse {
+	return &v1beta1.AdmissionResponse{
+		Result: &metav1.Status{
+			Message: err.Error(),
+		},
+	}
 }
 
 func AddContainer(target, added []corev1.Container, basePath string) (patch []PatchOperation) {
