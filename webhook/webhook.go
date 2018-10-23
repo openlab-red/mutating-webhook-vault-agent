@@ -27,13 +27,8 @@ type Config struct {
 	Volumes    []corev1.Volume    `yaml:"volumes"`
 }
 
-func (wk *WebHook) handler(w http.ResponseWriter, req *http.Request) {
-	log.Println(req)
-}
-
 func (wk *WebHook) mutate(context *gin.Context) {
 
-	log.Println(context.Request.Method)
 	var admissionResponse *v1beta1.AdmissionResponse
 	ar := v1beta1.AdmissionReview{}
 
@@ -58,16 +53,19 @@ func (wk *WebHook) mutate(context *gin.Context) {
 
 }
 
-func (wk *WebHook) serve(w http.ResponseWriter, r *http.Request) {
-
-	log.Println(r)
-
-}
-
 func (wk *WebHook) admit(ar *v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
 	req := ar.Request
+
 	log.Println(req)
-	return nil
+
+	return &v1beta1.AdmissionResponse {
+		Allowed: true,
+		Patch:   nil,
+		PatchType: func() *v1beta1.PatchType {
+			pt := v1beta1.PatchTypeJSONPatch
+			return &pt
+		}(),
+	}
 }
 
 func init() {

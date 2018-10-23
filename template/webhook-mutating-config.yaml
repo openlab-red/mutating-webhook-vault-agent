@@ -16,6 +16,7 @@ objects:
           namespace: hashicorp-vault
           path: "/mutate"
         caBundle: ${CA_BUNDLE}
+      failurePolicy: Fail
       rules:
         - operations: [ "CREATE" ]
           apiGroups: [""]
