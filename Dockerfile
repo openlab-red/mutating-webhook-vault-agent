@@ -13,8 +13,6 @@ COPY . ./
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix nocgo -o /app .
 
-FROM fedora:28
-
 ENV HOME=/home/mutating-webhook-vault-agent
 RUN mkdir -p $HOME
 
