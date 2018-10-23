@@ -1,22 +1,30 @@
-apiVersion: admissionregistration.k8s.io/v1beta1
-kind: MutatingWebhookConfiguration
-metadata:
-  name: vault-agent-webhook
-  labels:
-    app: vault-agent-webhook
-webhooks:
-  - name: vault-agent.vaultproject.io
-    clientConfig:
-      service:
-        name: vault-agent-webhook
-        namespace: hashicorp
-        path: "/mutate"
-      caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUM2akNDQWRLZ0F3SUJBZ0lCQVRBTkJna3Foa2lHOXcwQkFRc0ZBREFtTVNRd0lnWURWUVFEREJ0dmNHVnUKYzJocFpuUXRjMmxuYm1WeVFERTFNelk0TXpjek1qUXdIaGNOTVRnd09URXpNVEV4TlRJeldoY05Nak13T1RFeQpNVEV4TlRJMFdqQW1NU1F3SWdZRFZRUUREQnR2Y0dWdWMyaHBablF0YzJsbmJtVnlRREUxTXpZNE16Y3pNalF3CmdnRWlNQTBHQ1NxR1NJYjNEUUVCQVFVQUE0SUJEd0F3Z2dFS0FvSUJBUUM1SjdOT3FsMERtNzM5ejJ1WjlHcmcKcDVXTDFLbmMza3Ivd1YxTExUVTVmZGwxaUUrM1lVUEltR0xFZlpmVFRnYzBHalN0SkJWTFRlNzZ1c2tPQXNZYQp4UVRvUmJkQWhYZUg3ZEtoTk13QlZtdUhDT0x5eE15OGJXR05IM3FWbnNHMHAwMVZDVGpUc2RuNlExcVNzcVdTCnE3a1VxSHNLVWtDRllIbTh6SmRmV0k1K2IxOTlZMmU2TXJxNk1qRGFuaWlrdXdBRlJoRG55cmcvU1M5ZjJNdHgKalpUQWtMcFA0blRMZ0pkWDNXTXUwVHBuK0ZXcVJRZGZoUUd1R3F2Zjdlck55aWlMOTlwVUhWZkh1VFk5SVkwQwp1WEJnNHVpaTdZekVKL05sWG1rNkxEdWtWVE5MWmNnYURkN0Qrb2N3VVFxWFFIbW4xS0x1bjd3VFhlenpvYk1aCkFnTUJBQUdqSXpBaE1BNEdBMVVkRHdFQi93UUVBd0lDcERBUEJnTlZIUk1CQWY4RUJUQURBUUgvTUEwR0NTcUcKU0liM0RRRUJDd1VBQTRJQkFRQVRxVWEvMmxubEIvS1pBelV5MGtWKzlzTmZWeHo0N3I1WkxTM2JuQjc0RFNNNwpQQVRiaWFBS2h6aWd6eFJ3Uzltems3a0NFbjRyL1dOVTNTdlpURWZFeW9aRnJUYzIzVkNLdThZYzNGTXVCTmhiCk9zY2xqSHpaVG1JbXgzM0xUeEsyR29KbW4xdGxuNVJVRG43Q3BDQmpLSytDeVNlaWRybVZjT2s1VEY4eG5EUVkKWWhjdGtUNGg3T2VQOFFjSjFuWFRLSzdmVEhmblVRVXU5VmRxbHZ5KzJLSjFEQXdFVFduQm9OUTVJRlhUeHFNZgpOSWxZVmZ2a3dPN1gwdGxnT0RPcHBOMWUyNGhaYzFlbXY0Y3BwMXJPTUh3dk5FVlkySUREckduTmRlQWp0QW5nClR4d0FmV2FtNkJkeEJGa2RKSFJKM0VOMXpjdGVJNDFrNXJmK1J5cGYKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
-    rules:
-      - operations: [ "CREATE" ]
-        apiGroups: [""]
-        apiVersions: ["v1"]
-        resources: ["pods"]
-    namespaceSelector:
-      matchLabels:
-        vault-agent-webhook: enabled
+apiVersion: v1
+kind: Template
+objects:
+
+- apiVersion: admissionregistration.k8s.io/v1beta1
+  kind: MutatingWebhookConfiguration
+  metadata:
+    name: vault-agent-webhook
+    labels:
+      app: vault-agent-webhook
+  webhooks:
+    - name: vault-agent.vaultproject.io
+      clientConfig:
+        service:
+          name: vault-agent-webhook
+          namespace: hashicorp
+          path: "/mutate"
+        caBundle: ${CA_BUNDLE}
+      rules:
+        - operations: [ "CREATE" ]
+          apiGroups: [""]
+          apiVersions: ["v1"]
+          resources: ["pods"]
+      namespaceSelector:
+        matchLabels:
+          vault-agent-webhook: enabled
+parameters:
+- name: CA_BUNDLE
+  description: Certificate Authority to validate the services
+  required: true

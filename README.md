@@ -24,10 +24,18 @@
 
 3. Create Mutating WebHook
 
+    3.1 Get service-ca.crt
 
-    ```
-    oc create -f template/webhook-mutating-config.yaml
-    ```
+        ```
+        pod=$(oc get pods -lapp=vault-agent-webhook --no-headers -o custom-columns=NAME:.metadata.name)
+        export CA_BUNDLE=$(oc exec $pod -- cat /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt | base64 | tr -d '\n')
+        ```
+
+    3.2 Create the webhook
+
+        ```
+        oc process -f template/webhook-mutating-config.yaml -p CA_BUNDLE=${CA_BUNDLE} | oc create -f -
+        ```
 
 ## Verify Injection
 
