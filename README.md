@@ -3,6 +3,7 @@
 ## Build Vault Agent Webhook
 
 ```
+    oc project hashicorp-vault
     oc new-build --name=vault-agent-webhook https://github.com/openlab-red/mutating-webhook-vault-agent
 ```
 
