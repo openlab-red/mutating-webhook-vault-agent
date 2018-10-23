@@ -20,7 +20,6 @@ var (
 
 type WebHook struct {
 	sidecarConfig *Config
-	server        *gin.Engine
 }
 
 type Config struct {
@@ -56,6 +55,12 @@ func (wk *WebHook) mutate(context *gin.Context) {
 		}
 		context.AbortWithStatusJSON(http.StatusBadRequest, admissionResponse)
 	}
+
+}
+
+func (wk *WebHook) serve(w http.ResponseWriter, r *http.Request) {
+
+	log.Println(r)
 
 }
 
