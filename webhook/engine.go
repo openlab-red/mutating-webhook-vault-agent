@@ -26,7 +26,7 @@ func Start() {
 		sidecarConfig: nil,
 		server:        engine,
 	}
-	engine.Any("/mutate", wk.mutate)
+	engine.GET("/mutate", gin.WrapF(wk.handler))
 
 	engine.RunTLS(":"+viper.GetString("port"), "/var/run/secrets/kubernetes.io/certs/tls.crt", "/var/run/secrets/kubernetes.io/certs/tls.key")
 
