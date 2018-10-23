@@ -22,14 +22,21 @@ func Start() {
 
 	engine.GET("/health", Health)
 
-	wk := WebHook{
-		sidecarConfig: nil,
-	}
-	engine.POST("/mutate", wk.mutate)
+	webhook(engine)
 
 	engine.RunTLS(":"+viper.GetString("port"), "/var/run/secrets/kubernetes.io/certs/tls.crt", "/var/run/secrets/kubernetes.io/certs/tls.key")
-
 	shutdown(engine)
+}
+
+func webhook(engine *gin.Engine) {
+	sidecarConfig, err := loadConfig("/var/run/secrets/kubernetes.io/config/sidecarconfig.yaml")
+	if err != nil {
+		log.Errorf("Filed to load configuration: %v", err)
+	}
+	wk := WebHook{
+		sidecarConfig: sidecarConfig,
+	}
+	engine.POST("/mutate", wk.mutate)
 }
 
 func initLog(engine *gin.Engine) {

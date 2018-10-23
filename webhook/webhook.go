@@ -10,6 +10,7 @@ import (
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	"k8s.io/kubernetes/pkg/apis/core/v1"
 	"net/http"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -17,15 +18,6 @@ var (
 	codecs        = serializer.NewCodecFactory(runtimeScheme)
 	deserializer  = codecs.UniversalDeserializer()
 )
-
-type WebHook struct {
-	sidecarConfig *Config
-}
-
-type Config struct {
-	Containers []corev1.Container `yaml:"containers"`
-	Volumes    []corev1.Volume    `yaml:"volumes"`
-}
 
 func (wk *WebHook) mutate(context *gin.Context) {
 
@@ -56,9 +48,25 @@ func (wk *WebHook) mutate(context *gin.Context) {
 func (wk *WebHook) admit(ar *v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
 	req := ar.Request
 
-	log.Println(req)
+	var pod corev1.Pod
+	var admissionResponse *v1beta1.AdmissionResponse
 
-	return &v1beta1.AdmissionResponse {
+	if admissionResponse = Pod(req.Object.Raw, &pod); admissionResponse != nil {
+		return admissionResponse
+	}
+
+	log.WithFields(logrus.Fields{
+		"Kind":           req.Kind,
+		"Namespace":      req.Namespace,
+		"Name":           req.Name,
+		"UID":            req.UID,
+		"PatchOperation": req.Operation,
+		"UserInfo":       req.UserInfo,
+	}).Infoln("AdmissionReview for")
+
+	CreatePatch(&pod, wk.sidecarConfig, nil)
+
+	admissionResponse = &v1beta1.AdmissionResponse{
 		Allowed: true,
 		Patch:   nil,
 		PatchType: func() *v1beta1.PatchType {
@@ -66,6 +74,8 @@ func (wk *WebHook) admit(ar *v1beta1.AdmissionReview) *v1beta1.AdmissionResponse
 			return &pt
 		}(),
 	}
+
+	return admissionResponse
 }
 
 func init() {
