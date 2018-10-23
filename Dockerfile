@@ -1,4 +1,4 @@
-FROM docker.io/golang:1.11 AS builder
+FROM docker.io/golang:1.11
 
 ADD https://github.com/golang/dep/releases/download/v0.5.0/dep-linux-amd64 /usr/bin/dep
 RUN chmod +x /usr/bin/dep
