@@ -24,7 +24,6 @@ func Start() {
 
 	wk := WebHook{
 		sidecarConfig: nil,
-		server:        engine,
 	}
 	engine.Any("/mutate", wk.mutate)
 
