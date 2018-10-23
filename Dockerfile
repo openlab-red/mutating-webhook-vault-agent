@@ -1,3 +1,5 @@
+FROM go-dep:latest
+
 COPY . ./
 
 WORKDIR $GOPATH/src/github.com/openlab-red/mutating-webhook-vault-agent
