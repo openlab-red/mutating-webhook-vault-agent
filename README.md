@@ -4,7 +4,9 @@
 
 ```
     oc project hashicorp-vault
-    oc new-build --name=vault-agent-webhook https://github.com/openlab-red/mutating-webhook-vault-agent
+
+    oc create -f build/go-dep-build.yaml
+    oc create -f build/vault-agent-webhook-build.yaml
 ```
 
 ## Deploy Vault Agent WebHook

@@ -1,0 +1,43 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: vault-agent-webhook
+
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  labels:
+    build: vault-agent-webhook
+  name: vault-agent-webhook
+spec:
+  failedBuildsHistoryLimit: 5
+  nodeSelector: null
+  output:
+    to:
+      kind: ImageStreamTag
+      name: vault-agent-webhook:latest
+  postCommit: {}
+  resources: {}
+  runPolicy: Serial
+  source:
+    git:
+      uri: https://github.com/openlab-red/mutating-webhook-vault-agent
+    type: Git
+  strategy:
+    dockerStrategy:
+      from:
+        kind: ImageStreamTag
+        name: go-dep:latest
+    type: Docker
+  successfulBuildsHistoryLimit: 5
+  triggers:
+  - github:
+      secret: H6zbzRsVbOrybRD1bQIg
+    type: GitHub
+  - generic:
+      secret: 348BoCSjDyXzP9oNPUE4
+    type: Generic
+  - type: ConfigChange
+  - imageChange:
+    type: ImageChange
