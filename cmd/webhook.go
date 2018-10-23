@@ -11,7 +11,7 @@ var handlerCmd = &cobra.Command{
 	Short: "Start webhook server",
 	Long:  `Start webhook server`,
 	Run: func(cmd *cobra.Command, args []string) {
-		webhook.Handle()
+		webhook.Start()
 	},
 }
 

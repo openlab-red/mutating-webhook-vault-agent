@@ -25,7 +25,7 @@ func Start() {
 	wk := WebHook{
 		sidecarConfig: nil,
 	}
-	engine.Any("/mutate", wk.mutate)
+	engine.POST("/mutate", wk.mutate)
 
 	engine.RunTLS(":"+viper.GetString("port"), "/var/run/secrets/kubernetes.io/certs/tls.crt", "/var/run/secrets/kubernetes.io/certs/tls.key")
 
