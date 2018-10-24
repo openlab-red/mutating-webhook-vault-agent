@@ -59,7 +59,9 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 		return ToAdmissionResponse(err)
 	}
 
-	PotentialPodAndNamespace(req, &pod)
+	pod.Name = PotentialPodName(&pod.ObjectMeta)
+	req.Name = pod.Name
+	pod.Namespace = PotentialNamespace(req, &pod)
 
 	log.WithFields(logrus.Fields{
 		"Kind":           req.Kind,
@@ -76,7 +78,9 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 		}
 	}
 
-	patches, err := CreatePatch(&pod, wk.sidecarConfig, nil)
+	annotations := map[string]string{annotationStatus.name: "injected"}
+
+	patches, err := CreatePatch(&pod, wk.sidecarConfig, annotations)
 
 	if err != nil {
 		return ToAdmissionResponse(err)
@@ -94,11 +98,12 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 
 func injectionStatus(pod *corev1.Pod) bool {
 
+	var status string
 	required := false
 	metadata := pod.ObjectMeta
 
 	if metadata.Annotations != nil {
-		status := metadata.Annotations[annotationStatus.name]
+		status = metadata.Annotations[annotationStatus.name]
 
 		if strings.ToLower(status) == "injected" {
 			required = false
@@ -110,14 +115,14 @@ func injectionStatus(pod *corev1.Pod) bool {
 				required = true
 			}
 		}
-
-		log.WithFields(logrus.Fields{
-			"name":      metadata.Name,
-			"namespace": metadata.Namespace,
-			"status":    status,
-			"required":  required,
-		}).Infoln("Mutation policy for")
 	}
+
+	log.WithFields(logrus.Fields{
+		"name":      metadata.Name,
+		"namespace": metadata.Namespace,
+		"status":    status,
+		"required":  required,
+	}).Infoln("Mutation policy")
 
 	return required
 }

@@ -110,10 +110,8 @@ func PotentialPodName(metadata *metav1.ObjectMeta) string {
 	return ""
 }
 
-func PotentialPodAndNamespace(req *v1beta1.AdmissionRequest, pod *corev1.Pod) {
-	pod.ObjectMeta.Name = PotentialPodName(&pod.ObjectMeta)
-	req.Name = pod.ObjectMeta.Name
+func PotentialNamespace(req *v1beta1.AdmissionRequest, pod *corev1.Pod) (string) {
 	if pod.ObjectMeta.Namespace == "" {
-		pod.ObjectMeta.Namespace = req.Namespace
+		return req.Namespace
 	}
 }
