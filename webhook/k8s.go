@@ -7,12 +7,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func Pod(raw []byte, pod corev1.Pod) (error) {
+func Pod(raw []byte, pod *corev1.Pod) (error) {
 
-	if err := json.Unmarshal(raw, &pod); err != nil {
+	log.Debugf("Object: %v", string(raw))
+	if err := json.Unmarshal(raw, pod); err != nil {
 		log.Errorln(err)
 		return err
 	}
+	log.Debugf("Pod: %v", pod)
 	return nil
 }
 

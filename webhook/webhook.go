@@ -61,9 +61,7 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 	req := ar.Request
 	pod := corev1.Pod{}
 
-	log.Debugf("Object: %v", string(req.Object.Raw))
-
-	if err := Pod(req.Object.Raw, pod); err != nil {
+	if err := Pod(req.Object.Raw, &pod); err != nil {
 		return ToAdmissionResponse(err)
 	}
 
