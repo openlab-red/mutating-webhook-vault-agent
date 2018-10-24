@@ -9,8 +9,7 @@ import (
 
 func Pod(raw []byte, pod corev1.Pod) (error) {
 
-	deserializer := codecs.UniversalDeserializer()
-	if _, _, err := deserializer.Decode(raw, nil, &pod); err != nil {
+	if err := json.Unmarshal(raw, &pod); err != nil {
 		log.Errorln(err)
 		return err
 	}

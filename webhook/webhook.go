@@ -61,6 +61,8 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 	req := ar.Request
 	pod := corev1.Pod{}
 
+	log.Debugf("Object: %v", string(req.Object.Raw))
+
 	if err := Pod(req.Object.Raw, pod); err != nil {
 		return ToAdmissionResponse(err)
 	}
@@ -78,8 +80,7 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 		"UserInfo":       req.UserInfo,
 	}).Infoln("AdmissionReview for")
 
-	log.Debugf("Object: %v", string(req.Object.Raw))
-	log.Debugf("OldObject: %v", string(req.OldObject.Raw))
+
 
 	if !injectionRequired(ignoredNamespaces, &pod) {
 		return &v1beta1.AdmissionResponse{
