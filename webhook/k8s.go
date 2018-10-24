@@ -114,4 +114,5 @@ func PotentialNamespace(req *v1beta1.AdmissionRequest, pod *corev1.Pod) (string)
 	if pod.ObjectMeta.Namespace == "" {
 		return req.Namespace
 	}
+	return pod.ObjectMeta.Namespace
 }
