@@ -66,13 +66,12 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 	}
 
 	pod.Name = PotentialPodName(&pod.ObjectMeta)
-	req.Name = pod.Name
 	pod.Namespace = PotentialNamespace(req, &pod)
 
 	log.WithFields(logrus.Fields{
 		"Kind":           req.Kind,
 		"Namespace":      req.Namespace,
-		"Name":           req.Name,
+		"Name":           pod.Name,
 		"UID":            req.UID,
 		"PatchOperation": req.Operation,
 		"UserInfo":       req.UserInfo,
