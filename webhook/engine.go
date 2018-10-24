@@ -9,18 +9,16 @@ import (
 	"time"
 	"syscall"
 	"github.com/spf13/viper"
-	"github.com/sirupsen/logrus"
-	"github.com/gin-gonic/contrib/ginrus"
 )
 
-var log = logrus.New()
 
 func Start() {
-	var engine = gin.Default()
+	var engine = gin.New()
 
-	initLog(engine)
+	InitLogrus(engine)
 
 	engine.GET("/health", Health)
+
 
 	webhook(engine)
 
@@ -29,26 +27,14 @@ func Start() {
 }
 
 func webhook(engine *gin.Engine) {
-	sidecarConfig, err := loadConfig("/var/run/secrets/kubernetes.io/config/sidecarconfig.yaml")
+	sidecarConfig, err := LoadConfig("/var/run/secrets/kubernetes.io/config/sidecarconfig.yaml")
 	if err != nil {
-		log.Errorf("Filed to load configuration: %v", err)
+		log.Errorln(err)
 	}
 	wk := WebHook{
 		sidecarConfig: sidecarConfig,
 	}
 	engine.POST("/mutate", wk.mutate)
-}
-
-func initLog(engine *gin.Engine) {
-	level, err := logrus.ParseLevel(viper.GetString("log-level"))
-	if err != nil {
-		log.Fatalln(err)
-	} else {
-		log.Level = level
-	}
-
-	engine.Use(ginrus.Ginrus(log, time.RFC3339, true))
-
 }
 
 func shutdown(engine *gin.Engine) {
