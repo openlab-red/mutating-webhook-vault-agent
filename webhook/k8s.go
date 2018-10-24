@@ -112,6 +112,7 @@ func PotentialPodName(metadata *metav1.ObjectMeta) string {
 
 func PotentialPodAndNamespace(req *v1beta1.AdmissionRequest, pod *corev1.Pod) {
 	pod.ObjectMeta.Name = PotentialPodName(&pod.ObjectMeta)
+	req.Name = pod.ObjectMeta.Name
 	if pod.ObjectMeta.Namespace == "" {
 		pod.ObjectMeta.Namespace = req.Namespace
 	}
