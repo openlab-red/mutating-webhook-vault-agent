@@ -19,7 +19,6 @@ func Start() {
 
 	engine.GET("/health", Health)
 
-
 	webhook(engine)
 
 	engine.RunTLS(":"+viper.GetString("port"), "/var/run/secrets/kubernetes.io/certs/tls.crt", "/var/run/secrets/kubernetes.io/certs/tls.key")

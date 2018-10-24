@@ -7,13 +7,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func Pod(raw []byte, pod *corev1.Pod) (*v1beta1.AdmissionResponse) {
+func Pod(raw []byte, pod corev1.Pod) (error) {
 
-	if err := json.Unmarshal(raw, &pod); err != nil {
-		log.Errorf("Could not Unmarshal raw object: %v", err)
-		return ToAdmissionResponse(err)
+	deserializer := codecs.UniversalDeserializer()
+	if _, _, err := deserializer.Decode(raw, nil, &pod); err != nil {
+		log.Errorln(err)
+		return err
 	}
-
 	return nil
 }
 

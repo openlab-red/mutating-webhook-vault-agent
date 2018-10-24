@@ -24,7 +24,8 @@ func (wk *WebHook) mutate(context *gin.Context) {
 	ar := v1beta1.AdmissionReview{}
 
 	if err := context.ShouldBindJSON(&admissionResponse); err == nil {
-		admissionResponse = wk.admit(&ar)
+		log.Debugln(admissionResponse)
+		admissionResponse = wk.admit(ar)
 		admissionReview := v1beta1.AdmissionReview{}
 		if admissionResponse != nil {
 			admissionReview.Response = admissionResponse
@@ -39,14 +40,12 @@ func (wk *WebHook) mutate(context *gin.Context) {
 
 }
 
-func (wk *WebHook) admit(ar *v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
+func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
 	req := ar.Request
+	pod := corev1.Pod{}
 
-	var pod corev1.Pod
-	var admissionResponse *v1beta1.AdmissionResponse
-
-	if admissionResponse = Pod(req.Object.Raw, &pod); admissionResponse != nil {
-		return admissionResponse
+	if err := Pod(req.Object.Raw, pod); err != nil {
+		return ToAdmissionResponse(err)
 	}
 
 	log.WithFields(logrus.Fields{
@@ -58,18 +57,20 @@ func (wk *WebHook) admit(ar *v1beta1.AdmissionReview) *v1beta1.AdmissionResponse
 		"UserInfo":       req.UserInfo,
 	}).Infoln("AdmissionReview for")
 
-	CreatePatch(&pod, wk.sidecarConfig, nil)
+	patches, err := CreatePatch(&pod, wk.sidecarConfig, nil)
 
-	admissionResponse = &v1beta1.AdmissionResponse{
+	if err != nil {
+		return ToAdmissionResponse(err)
+	}
+
+	return &v1beta1.AdmissionResponse{
 		Allowed: true,
-		Patch:   nil,
+		Patch:   patches,
 		PatchType: func() *v1beta1.PatchType {
 			pt := v1beta1.PatchTypeJSONPatch
 			return &pt
 		}(),
 	}
-
-	return admissionResponse
 }
 
 func init() {
