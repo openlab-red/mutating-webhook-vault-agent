@@ -78,8 +78,6 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 		"UserInfo":       req.UserInfo,
 	}).Infoln("AdmissionReview for")
 
-
-
 	if !injectionRequired(ignoredNamespaces, &pod) {
 		return &v1beta1.AdmissionResponse{
 			Allowed: true,
