@@ -38,16 +38,16 @@
   version = "1.2.1"
 
 [[constraint]]
-  branch = "master"
+  branch = "release-1.9"
   name = "k8s.io/api"
 
 [[constraint]]
-  branch = "master"
+  branch = "release-1.9"
   name = "k8s.io/apimachinery"
 
 [[constraint]]
   name = "k8s.io/kubernetes"
-  version = "1.9"
+  branch = "release-1.9"
 
 [prune]
   go-tests = true

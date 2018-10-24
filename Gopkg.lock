@@ -2,6 +2,22 @@
 
 
 [[projects]]
+  digest = "1:d1665c44bd5db19aaee18d1b6233c99b0b9a986e8bccb24ef54747547a48027f"
+  name = "github.com/PuerkitoBio/purell"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "0bcb03f4b4d0a9428594752bd2a3b9aa0a9d4bd4"
+  version = "v1.1.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:c739832d67eb1e9cc478a19cc1a1ccd78df0397bf8a32978b759152e205f644b"
+  name = "github.com/PuerkitoBio/urlesc"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "de5bf2ad457846296e2031421a34e2568e304e35"
+
+[[projects]]
   branch = "master"
   digest = "1:4ddc17aeaa82cb18c5f0a25d7c253a10682f518f4b2558a82869506eec223d76"
   name = "github.com/docker/distribution"
@@ -11,6 +27,17 @@
   ]
   pruneopts = "UT"
   revision = "1cb4180b1a5b9c029b2f2beaeb38f0b5cf64e12e"
+
+[[projects]]
+  digest = "1:899234af23e5793c34e06fd397f86ba33af5307b959b6a7afd19b63db065a9d7"
+  name = "github.com/emicklei/go-restful"
+  packages = [
+    ".",
+    "log",
+  ]
+  pruneopts = "UT"
+  revision = "3eb9738c1697594ea6e71a7156a9bb32ed216cf0"
+  version = "v2.8.0"
 
 [[projects]]
   digest = "1:abeb38ade3f32a92943e5be54f55ed6d6e3b6602761d74b4aab4c9dd45c18abd"
@@ -37,14 +64,6 @@
   revision = "22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae"
 
 [[projects]]
-  branch = "master"
-  digest = "1:9cb98f262e24b5e3d6e1669ba510ca3137f955ec82b14a66b9bcaa639b1b5f56"
-  name = "github.com/gin-gonic/contrib"
-  packages = ["ginrus"]
-  pruneopts = "UT"
-  revision = "39cfb9727134fef3120d2458fce5fab14265a46c"
-
-[[projects]]
   digest = "1:d5083934eb25e45d17f72ffa86cae3814f4a9d6c073c4f16b64147169b245606"
   name = "github.com/gin-gonic/gin"
   packages = [
@@ -56,6 +75,38 @@
   pruneopts = "UT"
   revision = "b869fe1415e4b9eb52f247441830d502aece2d4d"
   version = "v1.3.0"
+
+[[projects]]
+  digest = "1:953a2628e4c5c72856b53f5470ed5e071c55eccf943d798d42908102af2a610f"
+  name = "github.com/go-openapi/jsonpointer"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "ef5f0afec364d3b9396b7b77b43dbe26bf1f8004"
+  version = "v0.17.1"
+
+[[projects]]
+  digest = "1:81210e0af657a0fb3638932ec68e645236bceefa4c839823db0c4d918f080895"
+  name = "github.com/go-openapi/jsonreference"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "8483a886a90412cd6858df4ea3483dce9c8e35a3"
+  version = "v0.17.1"
+
+[[projects]]
+  digest = "1:394fed5c0425fe01da3a34078adaa1682e4deaea6e5d232dde25c4034004c151"
+  name = "github.com/go-openapi/spec"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "5bae59e25b21498baea7f9d46e9c147ec106a42e"
+  version = "v0.17.1"
+
+[[projects]]
+  digest = "1:32f3d2e7f343de7263c550d696fb8a64d3c49d8df16b1ddfc8e80e1e4b3233ce"
+  name = "github.com/go-openapi/swag"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "5899d5c5e619fda5fa86e14795a835f473ca284c"
+  version = "v0.17.1"
 
 [[projects]]
   digest = "1:34e709f36fd4f868fb00dbaf8a6cab4c1ae685832d392874ba9d7c5dec2429d1"
@@ -142,6 +193,18 @@
   pruneopts = "UT"
   revision = "c2353362d570a7bfa228149c62842019201cfb71"
   version = "v1.8.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:84a5a2b67486d5d67060ac393aa255d05d24ed5ee41daecd5635ec22657b6492"
+  name = "github.com/mailru/easyjson"
+  packages = [
+    "buffer",
+    "jlexer",
+    "jwriter",
+  ]
+  pruneopts = "UT"
+  revision = "60711f1a8329503b04e1c88535f419d0bb440bff"
 
 [[projects]]
   digest = "1:0981502f9816113c9c8c4ac301583841855c8cf4da8c72f696b3ebedf6d0e4e5"
@@ -291,7 +354,7 @@
   revision = "8b8824e799c8fc8e6d900615cc6c761ce6c26c67"
 
 [[projects]]
-  digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
+  digest = "1:0c56024909189aee3364b7f21a95a27459f718aa7c199a5c111c36cfffd9eaef"
   name = "golang.org/x/text"
   packages = [
     "collate",
@@ -308,6 +371,7 @@
     "unicode/cldr",
     "unicode/norm",
     "unicode/rangetable",
+    "width",
   ]
   pruneopts = "UT"
   revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
@@ -338,8 +402,8 @@
   version = "v2.2.1"
 
 [[projects]]
-  branch = "master"
-  digest = "1:2049b79e93f7b0ab15718916637f1a8dcf9c97c1031655eac30c8a4ee6ef6378"
+  branch = "release-1.9"
+  digest = "1:53f48499088d76860b72b64e51eb71970dab4f37f1c7307062465d38b6bcde9e"
   name = "k8s.io/api"
   packages = [
     "admission/v1beta1",
@@ -348,7 +412,7 @@
     "core/v1",
   ]
   pruneopts = "UT"
-  revision = "843ad2d9b9ae703c74f2f43959e6ce0b24cc3185"
+  revision = "9273ee02527c608cecc74969b3e489f5dba686da"
 
 [[projects]]
   branch = "master"
@@ -359,15 +423,14 @@
   revision = "2867844605ff2cb7086eb25e19ad86c02e3319ad"
 
 [[projects]]
-  branch = "master"
-  digest = "1:efcc82508b9894572776fa6ce6838edb056d7a84971179200d7f5b7b95be87e3"
+  branch = "release-1.9"
+  digest = "1:e2eb8c5e1dcd7c639192708eb18a221c4548f8633887f4270f6601d024fbcfc5"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/resource",
     "pkg/apis/meta/internalversion",
     "pkg/apis/meta/v1",
-    "pkg/apis/meta/v1/unstructured",
-    "pkg/apis/meta/v1beta1",
+    "pkg/apis/meta/v1alpha1",
     "pkg/conversion",
     "pkg/conversion/queryparams",
     "pkg/fields",
@@ -385,18 +448,18 @@
     "pkg/util/framer",
     "pkg/util/intstr",
     "pkg/util/json",
-    "pkg/util/naming",
     "pkg/util/net",
     "pkg/util/runtime",
     "pkg/util/sets",
     "pkg/util/validation",
     "pkg/util/validation/field",
+    "pkg/util/wait",
     "pkg/util/yaml",
     "pkg/watch",
     "third_party/forked/golang/reflect",
   ]
   pruneopts = "UT"
-  revision = "60666be32c5de527b69dabe8e4400b4f0aa897de"
+  revision = "1926e7bb5c13e9c651830fe950cb623071bb03d2"
 
 [[projects]]
   branch = "master"
@@ -410,7 +473,16 @@
   revision = "7f6c545c2e4ff0af96d8aac792ca499ea87a92e1"
 
 [[projects]]
-  digest = "1:607b9a90146c692e0c08dd5eae37e9eadd44e5bb4e4a5dcb879e68ba56018c68"
+  branch = "master"
+  digest = "1:2932fadf06c2947e04e1f95fc7d4de2e6d32ebd4197a824a5b1e2a0e042c8e14"
+  name = "k8s.io/kube-openapi"
+  packages = ["pkg/common"]
+  pruneopts = "UT"
+  revision = "96e8bb74ecdddb93a882ef95d2b8ec49e93168ee"
+
+[[projects]]
+  branch = "release-1.9"
+  digest = "1:29de8e33b11b0ad05fd71b1cffc20183f624f6128404a226c7c52ebcb5013494"
   name = "k8s.io/kubernetes"
   packages = [
     "pkg/apis/autoscaling",
@@ -418,27 +490,18 @@
     "pkg/apis/core/v1",
     "pkg/apis/extensions",
     "pkg/apis/networking",
-    "pkg/apis/policy",
     "pkg/features",
     "pkg/util/parsers",
+    "pkg/util/pointer",
   ]
   pruneopts = "UT"
-  revision = "4ed3216f3ec431b140b1d899130a69fc671678f4"
-  version = "v1.12.1"
-
-[[projects]]
-  branch = "master"
-  digest = "1:275533868224ad57e1f7f44b4fe2cbd109c0c7cf522460bff2436a59743c0284"
-  name = "k8s.io/utils"
-  packages = ["pointer"]
-  pruneopts = "UT"
-  revision = "5e321f9a457c397558d600ec8dc4ff4b13019a69"
+  revision = "b5ec061c7ab9995a801206ea74f614ced04206d2"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/gin-gonic/contrib/ginrus",
+    "github.com/ghodss/yaml",
     "github.com/gin-gonic/gin",
     "github.com/sirupsen/logrus",
     "github.com/spf13/cobra",
