@@ -23,8 +23,8 @@ func (wk *WebHook) mutate(context *gin.Context) {
 	var admissionResponse *v1beta1.AdmissionResponse
 	ar := v1beta1.AdmissionReview{}
 
-	if err := context.ShouldBindJSON(&admissionResponse); err == nil {
-		log.Debugln(admissionResponse)
+	if err := context.ShouldBindJSON(&ar); err == nil {
+		log.Debugln(ar)
 		admissionResponse = wk.admit(ar)
 		admissionReview := v1beta1.AdmissionReview{}
 		if admissionResponse != nil {
