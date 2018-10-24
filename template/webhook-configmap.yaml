@@ -46,7 +46,7 @@ data:
       terminationMessagePath: /dev/termination-log
       terminationMessagePolicy: File
       volumeMounts:
-        - mountPath: /var/run/secrets/vaultproject.io
+      - mountPath: /var/run/secrets/vaultproject.io
         name: vault-agent-volume
     volumes:
     - name: vault-agent-volume
