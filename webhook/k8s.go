@@ -98,3 +98,21 @@ func CreatePatch(pod *corev1.Pod, sidecarConfig *Config, annotations map[string]
 
 	return json.Marshal(patch)
 }
+
+// Deal with potential empty fields, e.g., when the pod is created by a deployment
+func PotentialPodName(metadata *metav1.ObjectMeta) string {
+	if metadata.Name != "" {
+		return metadata.Name
+	}
+	if metadata.GenerateName != "" {
+		return metadata.GenerateName + "***** (actual name not yet known)"
+	}
+	return ""
+}
+
+func PotentialPodAndNamespace(req *v1beta1.AdmissionRequest, pod *corev1.Pod) {
+	pod.ObjectMeta.Name = PotentialPodName(&pod.ObjectMeta)
+	if pod.ObjectMeta.Namespace == "" {
+		pod.ObjectMeta.Namespace = req.Namespace
+	}
+}

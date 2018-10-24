@@ -5,7 +5,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/api/admission/v1beta1"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	"k8s.io/kubernetes/pkg/apis/core/v1"
@@ -18,17 +17,18 @@ var (
 	runtimeScheme = runtime.NewScheme()
 	codecs        = serializer.NewCodecFactory(runtimeScheme)
 	deserializer  = codecs.UniversalDeserializer()
-)
 
-var ignoredNamespaces = []string{
-	metav1.NamespaceSystem,
-	metav1.NamespacePublic,
-	//openshift ?
-}
+	alwaysValidFunc = func(value string) error {
+		return nil
+	}
 
-const (
-	admissionWebhookAnnotationInjectKey = "agent-injector-webhook.vaultproject.io/inject"
-	admissionWebhookAnnotationStatusKey = "agent-injector-webhook.vaultproject.io/status"
+	annotationRegistry = []*registeredAnnotation{
+		{"sidecar.agent.vaultproject.io/inject", alwaysValidFunc},
+		{"sidecar.agent..vaultproject.io/status", alwaysValidFunc},
+	}
+
+	annotationPolicy = annotationRegistry[0]
+	annotationStatus = annotationRegistry[1]
 )
 
 func (wk *WebHook) mutate(context *gin.Context) {
@@ -59,6 +59,8 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 		return ToAdmissionResponse(err)
 	}
 
+	PotentialPodAndNamespace(req, &pod)
+
 	log.WithFields(logrus.Fields{
 		"Kind":           req.Kind,
 		"Namespace":      req.Namespace,
@@ -68,7 +70,7 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 		"UserInfo":       req.UserInfo,
 	}).Infoln("AdmissionReview for")
 
-	if !isRequired(ignoredNamespaces, &pod.ObjectMeta) {
+	if !injectionStatus(&pod) {
 		return &v1beta1.AdmissionResponse{
 			Allowed: true,
 		}
@@ -90,43 +92,32 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 	}
 }
 
-func isRequired(ignoredList []string, metadata *metav1.ObjectMeta) bool {
-	// skip special kubernete system namespaces
-	for _, namespace := range ignoredList {
-		if metadata.Namespace == namespace {
-			log.WithFields(logrus.Fields{
-				"name":      metadata.Name,
-				"namespace": metadata.Namespace,
-			}).Infoln("Skip mutation for it in special namespace")
-			return false
-		}
-	}
+func injectionStatus(pod *corev1.Pod) bool {
 
-	annotations := metadata.GetAnnotations()
-	if annotations == nil {
-		annotations = map[string]string{}
-	}
+	required := false
+	metadata := pod.ObjectMeta
 
-	status := annotations[admissionWebhookAnnotationStatusKey]
+	if metadata.Annotations != nil {
+		status := metadata.Annotations[annotationStatus.name]
 
-	var required bool
-	if strings.ToLower(status) == "injected" {
-		required = false
-	} else {
-		switch strings.ToLower(annotations[admissionWebhookAnnotationInjectKey]) {
-		default:
+		if strings.ToLower(status) == "injected" {
 			required = false
-		case "y", "yes", "true", "on":
-			required = true
+		} else {
+			switch strings.ToLower(metadata.Annotations[annotationPolicy.name]) {
+			default:
+				required = false
+			case "true":
+				required = true
+			}
 		}
-	}
 
-	log.WithFields(logrus.Fields{
-		"name":      metadata.Name,
-		"namespace": metadata.Namespace,
-		"status":    status,
-		"required":  required,
-	}).Infoln("Mutation policy for")
+		log.WithFields(logrus.Fields{
+			"name":      metadata.Name,
+			"namespace": metadata.Namespace,
+			"status":    status,
+			"required":  required,
+		}).Infoln("Mutation policy for")
+	}
 
 	return required
 }

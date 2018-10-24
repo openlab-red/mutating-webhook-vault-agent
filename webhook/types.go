@@ -16,3 +16,10 @@ type PatchOperation struct {
 	Path  string      `json:"path"`
 	Value interface{} `json:"value,omitempty"`
 }
+
+type registeredAnnotation struct {
+	name      string
+	validator annotationValidationFunc
+}
+
+type annotationValidationFunc func(value string) error
