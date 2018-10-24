@@ -5,11 +5,13 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/api/admission/v1beta1"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	"k8s.io/kubernetes/pkg/apis/core/v1"
 	"net/http"
 	"github.com/sirupsen/logrus"
+	"strings"
 )
 
 var (
@@ -18,14 +20,23 @@ var (
 	deserializer  = codecs.UniversalDeserializer()
 )
 
+var ignoredNamespaces = []string{
+	metav1.NamespaceSystem,
+	metav1.NamespacePublic,
+	//openshift ?
+}
+
+const (
+	admissionWebhookAnnotationInjectKey = "agent-injector-webhook.vaultproject.io/inject"
+	admissionWebhookAnnotationStatusKey = "agent-injector-webhook.vaultproject.io/status"
+)
+
 func (wk *WebHook) mutate(context *gin.Context) {
 
-	var admissionResponse *v1beta1.AdmissionResponse
 	ar := v1beta1.AdmissionReview{}
 
 	if err := context.ShouldBindJSON(&ar); err == nil {
-		log.Debugln(ar)
-		admissionResponse = wk.admit(ar)
+		admissionResponse := wk.admit(ar)
 		admissionReview := v1beta1.AdmissionReview{}
 		if admissionResponse != nil {
 			admissionReview.Response = admissionResponse
@@ -57,6 +68,12 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 		"UserInfo":       req.UserInfo,
 	}).Infoln("AdmissionReview for")
 
+	if !isRequired(ignoredNamespaces, &pod.ObjectMeta) {
+		return &v1beta1.AdmissionResponse{
+			Allowed: true,
+		}
+	}
+
 	patches, err := CreatePatch(&pod, wk.sidecarConfig, nil)
 
 	if err != nil {
@@ -71,6 +88,47 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 			return &pt
 		}(),
 	}
+}
+
+func isRequired(ignoredList []string, metadata *metav1.ObjectMeta) bool {
+	// skip special kubernete system namespaces
+	for _, namespace := range ignoredList {
+		if metadata.Namespace == namespace {
+			log.WithFields(logrus.Fields{
+				"name":      metadata.Name,
+				"namespace": metadata.Namespace,
+			}).Infoln("Skip mutation for it in special namespace")
+			return false
+		}
+	}
+
+	annotations := metadata.GetAnnotations()
+	if annotations == nil {
+		annotations = map[string]string{}
+	}
+
+	status := annotations[admissionWebhookAnnotationStatusKey]
+
+	var required bool
+	if strings.ToLower(status) == "injected" {
+		required = false
+	} else {
+		switch strings.ToLower(annotations[admissionWebhookAnnotationInjectKey]) {
+		default:
+			required = false
+		case "y", "yes", "true", "on":
+			required = true
+		}
+	}
+
+	log.WithFields(logrus.Fields{
+		"name":      metadata.Name,
+		"namespace": metadata.Namespace,
+		"status":    status,
+		"required":  required,
+	}).Infoln("Mutation policy for")
+
+	return required
 }
 
 func init() {
