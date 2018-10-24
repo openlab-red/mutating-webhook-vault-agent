@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"crypto/sha256"
 	"github.com/ghodss/yaml"
+	"github.com/sirupsen/logrus"
 )
 
 func loadConfig(configFile string) (*Config, error) {
@@ -11,7 +12,10 @@ func loadConfig(configFile string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Infof("New configuration: sha256sum %x", sha256.Sum256(data))
+
+	log.WithFields(logrus.Fields{
+		"sha": sha256.Sum256(data),
+	}).Infof("New configuration: sha256sum")
 
 	var cfg Config
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
