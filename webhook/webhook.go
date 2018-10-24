@@ -88,9 +88,12 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 
 	patches, err := CreatePatch(&pod, wk.sidecarConfig, annotations)
 
+
 	if err != nil {
 		return ToAdmissionResponse(err)
 	}
+
+	log.Debugf("AdmissionResponse: patch=%v\n", string(patches))
 
 	return &v1beta1.AdmissionResponse{
 		Allowed: true,
