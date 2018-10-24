@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/api/admission/v1beta1"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
@@ -29,6 +30,11 @@ var (
 
 	annotationPolicy = annotationRegistry[0]
 	annotationStatus = annotationRegistry[1]
+
+	ignoredNamespaces = []string{
+		metav1.NamespaceSystem,
+		metav1.NamespacePublic,
+	}
 )
 
 func (wk *WebHook) mutate(context *gin.Context) {
@@ -72,7 +78,10 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 		"UserInfo":       req.UserInfo,
 	}).Infoln("AdmissionReview for")
 
-	if !injectionStatus(&pod) {
+	log.Debugf("Object: %v", string(req.Object.Raw))
+	log.Debugf("OldObject: %v", string(req.OldObject.Raw))
+
+	if !injectionRequired(ignoredNamespaces, &pod) {
 		return &v1beta1.AdmissionResponse{
 			Allowed: true,
 		}
@@ -96,26 +105,33 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 	}
 }
 
-func injectionStatus(pod *corev1.Pod) bool {
-
+func injectionRequired(ignored []string, pod *corev1.Pod) bool {
 	var status string
 	required := false
 	metadata := pod.ObjectMeta
 
-	log.Debugln(metadata.Annotations)
-	if metadata.Annotations != nil {
-		status = metadata.Annotations[annotationStatus.name]
+	// skip special kubernetes system namespaces
+	for _, namespace := range ignored {
+		if metadata.Namespace == namespace {
+			return false
+		}
+	}
+
+	annotations := metadata.GetAnnotations()
+
+	if annotations != nil {
+		status = annotations[annotationStatus.name]
 
 		log.Debugln(status)
 		if strings.ToLower(status) == "injected" {
 			required = false
 		} else {
-			inject := metadata.Annotations[annotationPolicy.name]
+			inject := annotations[annotationPolicy.name]
 			log.Debugln(inject)
 			switch strings.ToLower(inject) {
 			default:
 				required = false
-			case "true":
+			case "y", "yes", "true", "on":
 				required = true
 			}
 		}
