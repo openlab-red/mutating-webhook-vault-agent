@@ -102,13 +102,17 @@ func injectionStatus(pod *corev1.Pod) bool {
 	required := false
 	metadata := pod.ObjectMeta
 
+	log.Debugln(metadata.Annotations)
 	if metadata.Annotations != nil {
 		status = metadata.Annotations[annotationStatus.name]
 
+		log.Debugln(status)
 		if strings.ToLower(status) == "injected" {
 			required = false
 		} else {
-			switch strings.ToLower(metadata.Annotations[annotationPolicy.name]) {
+			inject := metadata.Annotations[annotationPolicy.name]
+			log.Debugln(inject)
+			switch strings.ToLower(inject) {
 			default:
 				required = false
 			case "true":
