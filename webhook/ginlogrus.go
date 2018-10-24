@@ -59,9 +59,9 @@ func LoggerWithLogrus(log *logrus.Logger) gin.HandlerFunc {
 			"comment":    comment,
 		})
 		if statusCode > 400 || len(c.Errors) > 0 {
-			requestLogger.Error(GIN)
+			requestLogger.Error(GIN, path)
 		} else {
-			requestLogger.Info(GIN)
+			requestLogger.Debug(GIN, path)
 		}
 	}
 }

@@ -25,6 +25,9 @@ spec:
       containers:
       - image: vault-agent-webhook:latest
         name: vault-agent-webhook
+        env:
+        - name: GIN_MODE
+          value: release
         args:
         - start
         ports:
