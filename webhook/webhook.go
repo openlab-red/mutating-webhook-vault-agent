@@ -106,7 +106,7 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 }
 
 func injectionRequired(ignored []string, pod *corev1.Pod) bool {
-	var status string
+	var status, inject string
 	required := false
 	metadata := pod.ObjectMeta
 
@@ -118,6 +118,7 @@ func injectionRequired(ignored []string, pod *corev1.Pod) bool {
 	}
 
 	annotations := metadata.GetAnnotations()
+	log.Debugf("Annotations: %v", annotations)
 
 	if annotations != nil {
 		status = annotations[annotationStatus.name]
@@ -126,7 +127,7 @@ func injectionRequired(ignored []string, pod *corev1.Pod) bool {
 		if strings.ToLower(status) == "injected" {
 			required = false
 		} else {
-			inject := annotations[annotationPolicy.name]
+			inject = annotations[annotationPolicy.name]
 			log.Debugln(inject)
 			switch strings.ToLower(inject) {
 			default:
@@ -141,6 +142,7 @@ func injectionRequired(ignored []string, pod *corev1.Pod) bool {
 		"name":      metadata.Name,
 		"namespace": metadata.Namespace,
 		"status":    status,
+		"inject":    inject,
 		"required":  required,
 	}).Infoln("Mutation policy")
 
