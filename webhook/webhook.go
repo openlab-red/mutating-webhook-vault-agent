@@ -25,7 +25,7 @@ var (
 
 	annotationRegistry = []*registeredAnnotation{
 		{"sidecar.agent.vaultproject.io/inject", alwaysValidFunc},
-		{"sidecar.agent..vaultproject.io/status", alwaysValidFunc},
+		{"sidecar.agent.vaultproject.io/status", alwaysValidFunc},
 	}
 
 	annotationPolicy = annotationRegistry[0]
