@@ -113,11 +113,14 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 
 func injectData(pod *corev1.Pod, config *Config) (*SideCarConfig, error) {
 	var tmpl bytes.Buffer
+	var t *template.Template
 
 	temp := template.New("inject")
-	t, err := temp.Parse(config.Template)
-	if err != nil {
-		t.Execute(&tmpl, GetSecurityContext(pod.Spec.Containers[0]))
+	t, _ = temp.Parse(config.Template)
+
+	if err :=  t.Execute(&tmpl, GetSecurityContext(pod.Spec.Containers[0])); err != nil {
+		log.Warnf("Failed to execute template %v %s", err, config.Template)
+		return nil, err
 	}
 
 	var sic SideCarConfig
