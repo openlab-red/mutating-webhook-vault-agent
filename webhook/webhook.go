@@ -118,7 +118,7 @@ func injectData(pod *corev1.Pod, config *Config) (*SideCarConfig, error) {
 	temp := template.New("inject")
 	t, _ = temp.Parse(config.Template)
 
-	if err :=  t.Execute(&tmpl, GetSecurityContext(pod.Spec.Containers[0])); err != nil {
+	if err :=  t.Execute(&tmpl, &pod.Spec.Containers[0]); err != nil {
 		log.Warnf("Failed to execute template %v %s", err, config.Template)
 		return nil, err
 	}
