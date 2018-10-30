@@ -88,7 +88,7 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 		}
 	}
 
-	wk.sidecarConfig, err = injectData(&pod, wk.config)
+	wk.sidecarConfig, err = InjectData(&pod, wk.config)
 	if err != nil {
 		return ToAdmissionResponse(err)
 	}
@@ -112,7 +112,7 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 	}
 }
 
-func injectData(pod *corev1.Pod, config *Config) (*SideCarConfig, error) {
+func InjectData(pod *corev1.Pod, config *Config) (*SideCarConfig, error) {
 	var tmpl bytes.Buffer
 
 	funcMap := template.FuncMap{

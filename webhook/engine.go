@@ -32,7 +32,6 @@ func webhook(engine *gin.Engine) {
 	wk := WebHook{
 		config: config,
 	}
-
 	engine.POST("/mutate", wk.mutate)
 }
 

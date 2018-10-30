@@ -25,7 +25,16 @@ data:
           name: vault-config
         - mountPath: /var/run/secrets/vaultproject.io
           name: vault-agent-volume
-        securityContext: {{ .SecurityContext }}
+        securityContext:
+          capabilities:
+            drop:
+              - KILL
+              - MKNOD
+              - SETGID
+              - SETUID
+          privileged: false
+          runAsNonRoot: true
+          RunAsUser: {{ .SecurityContext.RunAsUser }}
       - image: vault-agent-token-handler:latest
         name: vault-agent-token-handler
         args:
@@ -50,7 +59,16 @@ data:
         volumeMounts:
         - mountPath: /var/run/secrets/vaultproject.io
           name: vault-agent-volume
-        securityContext: {{ .SecurityContext }}
+        securityContext:
+          capabilities:
+            drop:
+              - KILL
+              - MKNOD
+              - SETGID
+              - SETUID
+          privileged: false
+          runAsNonRoot: true
+          RunAsUser: {{ .SecurityContext.RunAsUser }}
       volumes:
       - name: vault-agent-volume
         emptyDir:
