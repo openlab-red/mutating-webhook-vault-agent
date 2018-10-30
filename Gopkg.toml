@@ -38,16 +38,16 @@
   version = "1.2.1"
 
 [[constraint]]
-  branch = "release-1.9"
+  branch = "release-1.11"
   name = "k8s.io/api"
 
 [[constraint]]
-  branch = "release-1.9"
+  branch = "release-1.11"
   name = "k8s.io/apimachinery"
 
 [[constraint]]
   name = "k8s.io/kubernetes"
-  branch = "release-1.9"
+  branch = "release-1.11"
 
 [prune]
   go-tests = true
@@ -61,3 +61,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/gin-gonic/contrib"
+
+[[override]]
+  name = "github.com/kubernetes/client-go"
+  branch = "release-9.0"

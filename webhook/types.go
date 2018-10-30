@@ -11,9 +11,14 @@ type Config struct {
 	Template string `json:"template"`
 }
 
+type VaultAgentConfig struct {
+	Config string `json:"vault-agent-config"`
+}
+
 type SideCarConfig struct {
 	Containers []corev1.Container `yaml:"containers"`
 	Volumes    []corev1.Volume    `yaml:"volumes"`
+	ConfigMaps []corev1.ConfigMap `yaml:"configMaps"`
 }
 
 type PatchOperation struct {

@@ -16,7 +16,7 @@ data:
         - name: SKIP_SETCAP
           value: 'true'
         - name: VAULT_ADDR
-          value: https://vault.hashicorp.svc:8200
+          value: https://vault.hashicorp-vault.svc:8200
         - name: VAULT_CAPATH
           value: /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
         volumeMounts:
@@ -43,7 +43,7 @@ data:
           - name: LOG_LEVEL
             value: 'DEBUG'
           - name: VAULT_ADDR
-            value: https://vault.hashicorp.svc:8200
+            value: https://vault.hashicorp-vault.svc:8200
           - name: VAULT_CAPATH
             value: /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
           - name: VAULT_TOKEN
@@ -79,3 +79,24 @@ data:
               path: agent.config
           name: vault-agent-config
         name: vault-config
+  vault-agent.config: |-
+    vault-agent-config: |-
+      pid_file = "/var/run/secrets/vaultproject.io/pid"
+
+      auto_auth {
+              method "kubernetes"  {
+                      type = "kubernetes"
+                      mount_path = "auth/kubernetes"
+                      config = {
+                              role = "example"
+                              jwt = "@/var/run/secrets/kubernetes.io/serviceaccount/token"
+                      }
+              }
+
+              sink "file" {
+                      type = "file"
+                      config = {
+                              path = "/var/run/secrets/vaultproject.io/token"
+                      }
+              }
+      }

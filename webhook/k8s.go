@@ -5,8 +5,23 @@ import (
 	"k8s.io/api/admission/v1beta1"
 	"encoding/json"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
+func Client() (*kubernetes.Clientset) {
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		panic(err.Error())
+	}
+	// creates the clientset
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return clientset
+}
 func Pod(raw []byte, pod *corev1.Pod) (error) {
 
 	log.Debugf("Object: %v", string(raw))

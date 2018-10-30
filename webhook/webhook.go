@@ -30,6 +30,7 @@ var (
 	annotationRegistry = []*registeredAnnotation{
 		{"sidecar.agent.vaultproject.io/inject", alwaysValidFunc},
 		{"sidecar.agent.vaultproject.io/status", alwaysValidFunc},
+		{"sidecar.agent.vaultproject.io/secret-key", alwaysValidFunc},
 	}
 
 	annotationPolicy = annotationRegistry[0]
