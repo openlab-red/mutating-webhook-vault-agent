@@ -125,6 +125,7 @@ func injectData(pod *corev1.Pod, config *Config) (*SideCarConfig, error) {
 		log.Warnf("Failed to unmarshall template %v %s", err, string(tmpl.Bytes()))
 		return nil, err
 	}
+	log.Debugln("SideCarConfig: ", sic)
 	return &sic, nil
 }
 
