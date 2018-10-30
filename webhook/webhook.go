@@ -15,6 +15,7 @@ import (
 	"text/template"
 	"bytes"
 	"github.com/ghodss/yaml"
+	"encoding/json"
 )
 
 var (
@@ -113,19 +114,23 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 
 func injectData(pod *corev1.Pod, config *Config) (*SideCarConfig, error) {
 	var tmpl bytes.Buffer
-	var t *template.Template
+
+	funcMap := template.FuncMap{
+		"valueOrDefault": valueOrDefault,
+		"toJSON":         toJSON,
+	}
 
 	temp := template.New("inject")
-	t, _ = temp.Parse(config.Template)
+	t := template.Must(temp.Funcs(funcMap).Parse(config.Template))
 
-	if err :=  t.Execute(&tmpl, &pod.Spec.Containers[0]); err != nil {
-		log.Warnf("Failed to execute template %v %s", err, config.Template)
+	if err := t.Execute(&tmpl, &pod.Spec.Containers[0]); err != nil {
+		log.Errorf("Failed to execute template %v %s", err, config.Template)
 		return nil, err
 	}
 
 	var sic SideCarConfig
 	if err := yaml.Unmarshal(tmpl.Bytes(), &sic); err != nil {
-		log.Warnf("Failed to unmarshall template %v %s", err, string(tmpl.Bytes()))
+		log.Errorf("Failed to unmarshall template %v %s", err, string(tmpl.Bytes()))
 		return nil, err
 	}
 	log.Debugln("SideCarConfig: ", sic)
@@ -174,6 +179,27 @@ func injectionRequired(ignored []string, pod *corev1.Pod) bool {
 	}).Infoln("Mutation policy")
 
 	return required
+}
+
+func valueOrDefault(value string, defaultValue string) string {
+	if value == "" {
+		return defaultValue
+	}
+	return value
+}
+
+func toJSON(m map[string]string) string {
+	if m == nil {
+		return "{}"
+	}
+
+	ba, err := json.Marshal(m)
+	if err != nil {
+		log.Warnf("Unable to marshal %v", m)
+		return "{}"
+	}
+
+	return string(ba)
 }
 
 func init() {
