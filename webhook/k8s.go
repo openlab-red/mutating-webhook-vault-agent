@@ -120,5 +120,6 @@ func PotentialNamespace(req *v1beta1.AdmissionRequest, pod *corev1.Pod) (string)
 }
 
 func GetSecurityContext(container corev1.Container) *corev1.SecurityContext {
+	log.Debugln("Security Context", container.SecurityContext)
 	return container.SecurityContext
 }
