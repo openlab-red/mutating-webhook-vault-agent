@@ -22,6 +22,7 @@ spec:
       labels:
         app: vault-agent-webhook
     spec:
+      serviceAccountName: vault-agent-webhook
       containers:
       - image: vault-agent-webhook:latest
         name: vault-agent-webhook

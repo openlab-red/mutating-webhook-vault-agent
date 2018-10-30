@@ -11,7 +11,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-
 func Start() {
 	var engine = gin.New()
 
@@ -26,13 +25,14 @@ func Start() {
 }
 
 func webhook(engine *gin.Engine) {
-	sidecarConfig, err := LoadConfig("/var/run/secrets/kubernetes.io/config/sidecarconfig.yaml")
+	config, err := LoadConfig("/var/run/secrets/kubernetes.io/config/sidecarconfig.yaml")
 	if err != nil {
 		log.Errorln(err)
 	}
 	wk := WebHook{
-		sidecarConfig: sidecarConfig,
+		config: config,
 	}
+
 	engine.POST("/mutate", wk.mutate)
 }
 

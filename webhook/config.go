@@ -4,23 +4,22 @@ import (
 	"io/ioutil"
 	"crypto/sha256"
 	"github.com/ghodss/yaml"
-	"github.com/sirupsen/logrus"
+	"strings"
 )
 
-func LoadConfig(configFile string) (*Config, error) {
-	data, err := ioutil.ReadFile(configFile)
+func LoadConfig(injectFile string) (*Config, error) {
+	data, err := ioutil.ReadFile(injectFile)
 	if err != nil {
 		return nil, err
 	}
-
-	log.WithFields(logrus.Fields{
-		"sha": sha256.Sum256(data),
-	}).Infof("New configuration: sha256sum")
-
-	var cfg Config
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
+	var c Config
+	if err := yaml.Unmarshal(data, &c); err != nil {
+		log.Warnf("Failed to parse injectFile %s", string(data))
 		return nil, err
 	}
 
-	return &cfg, nil
+	log.Infof("New configuration: sha256sum %x", sha256.Sum256(data))
+	log.Infof("Template: |\n  %v", strings.Replace(c.Template, "\n", "\n  ", -1))
+
+	return &c, nil
 }

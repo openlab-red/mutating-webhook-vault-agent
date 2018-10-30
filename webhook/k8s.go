@@ -90,11 +90,11 @@ func UpdateAnnotation(target map[string]string, added map[string]string) (patch 
 	return patch
 }
 
-func CreatePatch(pod *corev1.Pod, sidecarConfig *Config, annotations map[string]string) ([]byte, error) {
+func CreatePatch(pod *corev1.Pod, sidecarConfig *SideCarConfig, annotations map[string]string) ([]byte, error) {
 	var patch []PatchOperation
 
-    patch = append(patch, AddContainer(pod.Spec.Containers, sidecarConfig.Containers, "/spec/containers")...)
-    patch = append(patch, AddVolume(pod.Spec.Volumes, sidecarConfig.Volumes, "/spec/volumes")...)
+	patch = append(patch, AddContainer(pod.Spec.Containers, sidecarConfig.Containers, "/spec/containers")...)
+	patch = append(patch, AddVolume(pod.Spec.Volumes, sidecarConfig.Volumes, "/spec/volumes")...)
 	patch = append(patch, UpdateAnnotation(pod.Annotations, annotations)...)
 
 	log.Debugf("Patch: %v", patch)
@@ -117,4 +117,8 @@ func PotentialNamespace(req *v1beta1.AdmissionRequest, pod *corev1.Pod) (string)
 		return req.Namespace
 	}
 	return pod.ObjectMeta.Namespace
+}
+
+func GetSecurityContext(container corev1.Container) *corev1.SecurityContext {
+	return container.SecurityContext
 }

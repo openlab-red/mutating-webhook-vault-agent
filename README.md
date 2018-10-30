@@ -17,6 +17,7 @@
     oc create -f template/webhook-configmap.yaml
     oc create -f template/vault-agent-configmap.yaml
     oc create -f template/webhook-service.yaml
+    oc create -f template/webhook-podsecuritypolicy.yaml
     ```
 
 2. Deployment

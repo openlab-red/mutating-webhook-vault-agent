@@ -12,6 +12,9 @@ import (
 	"net/http"
 	"github.com/sirupsen/logrus"
 	"strings"
+	"text/template"
+	"bytes"
+	"github.com/ghodss/yaml"
 )
 
 var (
@@ -60,8 +63,9 @@ func (wk *WebHook) mutate(context *gin.Context) {
 func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
 	req := ar.Request
 	pod := corev1.Pod{}
+	var err error
 
-	if err := Pod(req.Object.Raw, &pod); err != nil {
+	if err = Pod(req.Object.Raw, &pod); err != nil {
 		return ToAdmissionResponse(err)
 	}
 
@@ -83,10 +87,13 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 		}
 	}
 
+	wk.sidecarConfig, err = injectData(&pod, wk.config)
+	if err != nil {
+		return ToAdmissionResponse(err)
+	}
+
 	annotations := map[string]string{annotationStatus.name: "injected"}
-
 	patches, err := CreatePatch(&pod, wk.sidecarConfig, annotations)
-
 
 	if err != nil {
 		return ToAdmissionResponse(err)
@@ -102,6 +109,23 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 			return &pt
 		}(),
 	}
+}
+
+func injectData(pod *corev1.Pod, config *Config) (*SideCarConfig, error) {
+	var tmpl bytes.Buffer
+
+	temp := template.New("inject")
+	t, err := temp.Parse(config.Template)
+	if err != nil {
+		t.Execute(&tmpl, GetSecurityContext(pod.Spec.Containers[0]))
+	}
+
+	var sic SideCarConfig
+	if err := yaml.Unmarshal(tmpl.Bytes(), &sic); err != nil {
+		log.Warnf("Failed to unmarshall template %v %s", err, string(tmpl.Bytes()))
+		return nil, err
+	}
+	return &sic, nil
 }
 
 func injectionRequired(ignored []string, pod *corev1.Pod) bool {
