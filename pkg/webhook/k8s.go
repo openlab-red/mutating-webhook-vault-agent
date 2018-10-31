@@ -176,6 +176,7 @@ func FindTokenVolumeName(volumes []corev1.Volume) (string) {
 func FindVolumeMount(volumes []corev1.VolumeMount, name string) (*corev1.VolumeMount) {
 	for _, vol := range volumes {
 		if strings.Contains(vol.Name, name) {
+			log.Debugln("VolumeMount found", vol.Name)
 			return &vol
 		}
 	}
