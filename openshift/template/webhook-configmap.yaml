@@ -25,6 +25,8 @@ data:
           name: vault-config
         - mountPath: /var/run/secrets/vaultproject.io
           name: vault-agent-volume
+        - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+          name: {{ .TokenVolume }}
         securityContext:
           capabilities:
             drop:
@@ -59,6 +61,9 @@ data:
         volumeMounts:
         - mountPath: /var/run/secrets/vaultproject.io
           name: vault-agent-volume
+        - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+          name: {{ .TokenVolume }}
+          readOnly: true
         securityContext:
           capabilities:
             drop:
@@ -68,7 +73,7 @@ data:
               - SETUID
           privileged: false
           runAsNonRoot: true
-          RunAsUser: {{ .SecurityContext.RunAsUser }}
+          RunAsUser: {{ .Container.SecurityContext.RunAsUser }}
       volumes:
       - name: vault-agent-volume
         emptyDir:

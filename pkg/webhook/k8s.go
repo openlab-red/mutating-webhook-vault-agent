@@ -7,6 +7,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"strings"
 )
 
 func Client() (*kubernetes.Clientset) {
@@ -134,7 +135,11 @@ func PotentialNamespace(req *v1beta1.AdmissionRequest, pod *corev1.Pod) (string)
 	return pod.ObjectMeta.Namespace
 }
 
-func GetSecurityContext(container corev1.Container) *corev1.SecurityContext {
-	log.Debugln("Security Context", container.SecurityContext)
-	return container.SecurityContext
+func FindTokenVolume(volumes []corev1.Volume) string {
+	for _, vol := range volumes {
+		if strings.Contains(vol.Name, "token") && vol.VolumeSource.Secret != nil {
+			return vol.Name
+		}
+	}
+	return ""
 }

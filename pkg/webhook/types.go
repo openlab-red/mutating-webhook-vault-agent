@@ -8,9 +8,13 @@ type WebHook struct {
 }
 
 type Config struct {
-	Template string `json:"template"`
+	Template         string `json:"template"`
 	VaultAgentConfig string `json:"vault-agent-config"`
+}
 
+type SidecarData struct {
+	Container   corev1.Container
+	TokenVolume string
 }
 
 type VaultConfig struct {

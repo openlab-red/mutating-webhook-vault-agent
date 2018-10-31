@@ -98,7 +98,12 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 	}
 
 	//sidecar data
-	wk.vaultConfig, err = InjectData(&pod, wk.config)
+	data := SidecarData{
+		Container: pod.Spec.Containers[0],
+		TokenVolume: FindTokenVolume(pod.Spec.Volumes),
+	}
+
+	wk.vaultConfig, err = InjectData(&data, wk.config)
 	if err != nil {
 		return ToAdmissionResponse(err)
 	}
@@ -143,7 +148,7 @@ func ensureConfigMap(pod corev1.Pod, wk *WebHook) (*corev1.ConfigMap, error) {
 
 }
 
-func InjectData(pod *corev1.Pod, config *Config) (*VaultConfig, error) {
+func InjectData(data *SidecarData, config *Config) (*VaultConfig, error) {
 	var tmpl bytes.Buffer
 
 	funcMap := template.FuncMap{
@@ -154,7 +159,7 @@ func InjectData(pod *corev1.Pod, config *Config) (*VaultConfig, error) {
 	temp := template.New("inject")
 	t := template.Must(temp.Funcs(funcMap).Parse(config.Template))
 
-	if err := t.Execute(&tmpl, &pod.Spec.Containers[0]); err != nil {
+	if err := t.Execute(&tmpl, &data); err != nil {
 		log.Errorf("Failed to execute template %v %s", err, config.Template)
 		return nil, err
 	}
