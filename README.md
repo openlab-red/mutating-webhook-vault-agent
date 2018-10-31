@@ -45,11 +45,14 @@
 
 ## Verify Injection
 
-WIP
+1. Label the project where you want the webhook to listen.
 
-```
-oc label namespace app vault-agent-webhook=enabled
-```
+    ```
+    oc label namespace app vault-agent-webhook=enabled
+    ```
+
+2. Add the *sidecar.agent.vaultproject.io/inject* annotation with value true to the pod template spec to enable injection.
+
 
 # References
 

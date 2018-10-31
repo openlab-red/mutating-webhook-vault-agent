@@ -37,7 +37,7 @@ data:
           privileged: false
           runAsNonRoot: true
           RunAsUser: {{ .Container.SecurityContext.RunAsUser }}
-      - image: docker-registry.default.svc:5000/openshift/vault-agent-token-handler:latest
+      - image: docker-registry.default.svc:5000/openshift/vault-secret-fetcher:latest
         name: vault-agent-token-handler
         args:
           - handler
