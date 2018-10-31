@@ -38,9 +38,9 @@ data:
           runAsNonRoot: true
           RunAsUser: {{ .Container.SecurityContext.RunAsUser }}
       - image: docker-registry.default.svc:5000/openshift/vault-secret-fetcher:latest
-        name: vault-agent-token-handler
+        name: vault-secret-fetcher
         args:
-          - handler
+          - start
         env:
           - name: LOG_LEVEL
             value: 'DEBUG'
