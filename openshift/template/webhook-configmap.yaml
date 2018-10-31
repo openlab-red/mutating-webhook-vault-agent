@@ -36,7 +36,7 @@ data:
               - SETUID
           privileged: false
           runAsNonRoot: true
-          RunAsUser: {{ .SecurityContext.RunAsUser }}
+          RunAsUser: {{ .Container.SecurityContext.RunAsUser }}
       - image: docker-registry.default.svc:5000/openshift/vault-agent-token-handler:latest
         name: vault-agent-token-handler
         args:
