@@ -102,6 +102,9 @@ func AddVolumeMount(target, added []corev1.VolumeMount, basePath string) (patch 
 			Value: value,
 		})
 	}
+
+	log.Debugf("VolumeMount Patch: %v", patch)
+
 	return patch
 }
 
@@ -134,9 +137,9 @@ func CreatePatch(pod *corev1.Pod, sidecarConfig *VaultConfig, annotations map[st
 		FindVolumeMount(sidecarConfig.Containers[0].VolumeMounts, "vault-agent-volume")
 	}
 
-	patch = append(patch, AddVolumeMount(pod.Spec.Containers[0].VolumeMounts, volumeMounts, "/spec/containers/0/volumeMounts")...)
+	log.Debugf("VolumeMounts: %v", volumeMounts)
 
-	log.Debugf("VolumeMount Patch: %v", patch)
+	patch = append(patch, AddVolumeMount(pod.Spec.Containers[0].VolumeMounts, volumeMounts, "/spec/containers/0/volumeMounts")...)
 
 	patch = append(patch, AddContainer(pod.Spec.Containers, sidecarConfig.Containers, "/spec/containers")...)
 	patch = append(patch, AddVolume(pod.Spec.Volumes, sidecarConfig.Volumes, "/spec/volumes")...)
