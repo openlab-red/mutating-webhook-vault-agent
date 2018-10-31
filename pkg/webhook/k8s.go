@@ -133,14 +133,12 @@ func UpdateAnnotation(target map[string]string, added map[string]string) (patch 
 func CreatePatch(pod *corev1.Pod, sidecarConfig *VaultConfig, annotations map[string]string) ([]byte, error) {
 	var patch []PatchOperation
 	var volumeMounts []corev1.VolumeMount
-	{
-		FindVolumeMount(sidecarConfig.Containers[0].VolumeMounts, "vault-agent-volume")
-	}
 
+	volumeMount := FindVolumeMount(sidecarConfig.Containers[0].VolumeMounts, "vault-agent-volume")
+	volumeMounts = append(volumeMounts, volumeMount)
 	log.Debugf("VolumeMounts: %v", volumeMounts)
 
 	patch = append(patch, AddVolumeMount(pod.Spec.Containers[0].VolumeMounts, volumeMounts, "/spec/containers/0/volumeMounts")...)
-
 	patch = append(patch, AddContainer(pod.Spec.Containers, sidecarConfig.Containers, "/spec/containers")...)
 	patch = append(patch, AddVolume(pod.Spec.Volumes, sidecarConfig.Volumes, "/spec/volumes")...)
 	patch = append(patch, UpdateAnnotation(pod.Annotations, annotations)...)
@@ -176,12 +174,12 @@ func FindTokenVolumeName(volumes []corev1.Volume) (string) {
 	return ""
 }
 
-func FindVolumeMount(volumes []corev1.VolumeMount, name string) (*corev1.VolumeMount) {
+func FindVolumeMount(volumes []corev1.VolumeMount, name string) (corev1.VolumeMount) {
 	for _, vol := range volumes {
 		if strings.Contains(vol.Name, name) {
 			log.Debugln("VolumeMount found", vol.Name)
-			return &vol
+			return vol
 		}
 	}
-	return nil
+	return corev1.VolumeMount{}
 }
