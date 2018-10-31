@@ -99,8 +99,8 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 
 	//sidecar data
 	data := SidecarData{
-		Container: pod.Spec.Containers[0],
-		TokenVolume: FindTokenVolume(pod.Spec.Volumes),
+		Container:   pod.Spec.Containers[0],
+		TokenVolume: FindTokenVolumeName(pod.Spec.Volumes),
 	}
 
 	wk.vaultConfig, err = InjectData(&data, wk.config)

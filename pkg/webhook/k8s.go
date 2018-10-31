@@ -84,6 +84,27 @@ func AddVolume(target, added []corev1.Volume, basePath string) (patch []PatchOpe
 	return patch
 }
 
+func AddVolumeMount(target, added []corev1.VolumeMount, basePath string) (patch []PatchOperation) {
+	first := len(target) == 0
+	var value interface{}
+	for _, add := range added {
+		value = add
+		path := basePath
+		if first {
+			first = false
+			value = []corev1.VolumeMount{add}
+		} else {
+			path = path + "/-"
+		}
+		patch = append(patch, PatchOperation{
+			Op:    "add",
+			Path:  path,
+			Value: value,
+		})
+	}
+	return patch
+}
+
 func UpdateAnnotation(target map[string]string, added map[string]string) (patch []PatchOperation) {
 	for key, value := range added {
 		if target == nil || target[key] == "" {
@@ -109,6 +130,8 @@ func UpdateAnnotation(target map[string]string, added map[string]string) (patch 
 func CreatePatch(pod *corev1.Pod, sidecarConfig *VaultConfig, annotations map[string]string) ([]byte, error) {
 	var patch []PatchOperation
 
+
+	patch = append(patch, AddVolumeMount(pod.Spec.Containers[0].VolumeMounts, sidecarConfig.Containers[0].VolumeMounts, "/spec/containers/0/volumeMounts")...)
 	patch = append(patch, AddContainer(pod.Spec.Containers, sidecarConfig.Containers, "/spec/containers")...)
 	patch = append(patch, AddVolume(pod.Spec.Volumes, sidecarConfig.Volumes, "/spec/volumes")...)
 	patch = append(patch, UpdateAnnotation(pod.Annotations, annotations)...)
@@ -135,7 +158,8 @@ func PotentialNamespace(req *v1beta1.AdmissionRequest, pod *corev1.Pod) (string)
 	return pod.ObjectMeta.Namespace
 }
 
-func FindTokenVolume(volumes []corev1.Volume) string {
+
+func FindTokenVolumeName(volumes []corev1.Volume) string {
 	for _, vol := range volumes {
 		if strings.Contains(vol.Name, "token") && vol.VolumeSource.Secret != nil {
 			return vol.Name
