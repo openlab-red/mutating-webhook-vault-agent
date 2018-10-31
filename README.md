@@ -54,6 +54,20 @@
 2. Add the *sidecar.agent.vaultproject.io/inject* annotation with value true to the pod template spec to enable injection.
 
 
+    ```
+    oc patch dc/thorntail-example -p '{
+                                     "spec": {
+                                       "template": {
+                                         "metadata": {
+                                           "annotations": {
+                                             "sidecar.agent.vaultproject.io/inject": "true"
+                                           }
+                                         }
+                                       }
+                                     }
+                                   }'
+    ```
+
 # References
 
 * https://docs.openshift.com/container-platform/3.9/architecture/additional_concepts/dynamic_admission_controllers.html
