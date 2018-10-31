@@ -41,14 +41,12 @@ rules:
   - list
   - watch
   - patch
-- apiGroups: [""]
+- apiGroups:
+  - '*'
   resources:
-  - configmap
+  - configmaps
   verbs:
-  - get
-  - list
-  - watch
-  - patch
+  - '*'
 
 ---
 apiVersion: v1
