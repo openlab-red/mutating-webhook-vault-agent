@@ -129,9 +129,12 @@ func UpdateAnnotation(target map[string]string, added map[string]string) (patch 
 
 func CreatePatch(pod *corev1.Pod, sidecarConfig *VaultConfig, annotations map[string]string) ([]byte, error) {
 	var patch []PatchOperation
+	var volumeMounts []corev1.VolumeMount
+	{
+		FindVolumeMount(sidecarConfig.Containers[0].VolumeMounts, "vault-agent-volume")
+	}
 
-
-	patch = append(patch, AddVolumeMount(pod.Spec.Containers[0].VolumeMounts, sidecarConfig.Containers[0].VolumeMounts, "/spec/containers/0/volumeMounts")...)
+	patch = append(patch, AddVolumeMount(pod.Spec.Containers[0].VolumeMounts, volumeMounts, "/spec/containers/0/volumeMounts")...)
 	patch = append(patch, AddContainer(pod.Spec.Containers, sidecarConfig.Containers, "/spec/containers")...)
 	patch = append(patch, AddVolume(pod.Spec.Volumes, sidecarConfig.Volumes, "/spec/volumes")...)
 	patch = append(patch, UpdateAnnotation(pod.Annotations, annotations)...)
@@ -158,12 +161,20 @@ func PotentialNamespace(req *v1beta1.AdmissionRequest, pod *corev1.Pod) (string)
 	return pod.ObjectMeta.Namespace
 }
 
-
-func FindTokenVolumeName(volumes []corev1.Volume) string {
+func FindTokenVolumeName(volumes []corev1.Volume) (string) {
 	for _, vol := range volumes {
 		if strings.Contains(vol.Name, "token") && vol.VolumeSource.Secret != nil {
 			return vol.Name
 		}
 	}
 	return ""
+}
+
+func FindVolumeMount(volumes []corev1.VolumeMount, name string) (*corev1.VolumeMount) {
+	for _, vol := range volumes {
+		if strings.Contains(vol.Name, name) {
+			return &vol
+		}
+	}
+	return nil
 }
