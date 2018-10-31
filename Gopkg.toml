@@ -58,10 +58,6 @@
   name = "github.com/docker/distribution"
   branch = "master"
 
-[[constraint]]
-  branch = "master"
-  name = "github.com/gin-gonic/contrib"
-
 [[override]]
   name = "github.com/kubernetes/client-go"
   branch = "release-9.0"

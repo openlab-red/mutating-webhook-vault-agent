@@ -105,7 +105,7 @@ func UpdateAnnotation(target map[string]string, added map[string]string) (patch 
 	return patch
 }
 
-func CreatePatch(pod *corev1.Pod, sidecarConfig *SideCarConfig, annotations map[string]string) ([]byte, error) {
+func CreatePatch(pod *corev1.Pod, sidecarConfig *VaultConfig, annotations map[string]string) ([]byte, error) {
 	var patch []PatchOperation
 
 	patch = append(patch, AddContainer(pod.Spec.Containers, sidecarConfig.Containers, "/spec/containers")...)

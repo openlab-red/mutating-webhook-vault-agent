@@ -3,6 +3,8 @@
 ## Build Vault Agent Webhook
 
 ```
+    cd openshift/
+
     oc project hashicorp-vault
 
     oc create -f build/go-dep-build.yaml

@@ -3,7 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/openlab-red/mutating-webhook-vault-agent/webhook"
+	"github.com/openlab-red/mutating-webhook-vault-agent/pkg/webhook"
 )
 
 var handlerCmd = &cobra.Command{

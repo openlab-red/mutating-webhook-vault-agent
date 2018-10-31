@@ -18,6 +18,8 @@ import (
 	"encoding/json"
 )
 
+const vaultConfigMapName = "vault-agent-config"
+
 var (
 	runtimeScheme = runtime.NewScheme()
 	codecs        = serializer.NewCodecFactory(runtimeScheme)
@@ -89,14 +91,21 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 		}
 	}
 
-	wk.sidecarConfig, err = InjectData(&pod, wk.config)
+	//vault config map
+	_, err = ensureConfigMap(pod, wk)
 	if err != nil {
 		return ToAdmissionResponse(err)
 	}
 
+	//sidecar data
+	wk.vaultConfig, err = InjectData(&pod, wk.config)
+	if err != nil {
+		return ToAdmissionResponse(err)
+	}
 	annotations := map[string]string{annotationStatus.name: "injected"}
-	patches, err := CreatePatch(&pod, wk.sidecarConfig, annotations)
 
+	//patch
+	patches, err := CreatePatch(&pod, wk.vaultConfig, annotations)
 	if err != nil {
 		return ToAdmissionResponse(err)
 	}
@@ -113,7 +122,28 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 	}
 }
 
-func InjectData(pod *corev1.Pod, config *Config) (*SideCarConfig, error) {
+func ensureConfigMap(pod corev1.Pod, wk *WebHook) (*corev1.ConfigMap, error) {
+	client := Client()
+	configMaps := client.CoreV1().ConfigMaps(pod.Namespace)
+	_, err := configMaps.Get(vaultConfigMapName, metav1.GetOptions{})
+	if err != nil {
+		var data map[string]string
+		data = make(map[string]string)
+		data[vaultConfigMapName] = wk.config.VaultAgentConfig
+		configMap := corev1.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      vaultConfigMapName,
+				Namespace: pod.Namespace,
+			},
+			Data: data,
+		}
+		return configMaps.Create(&configMap)
+	}
+	return nil, nil
+
+}
+
+func InjectData(pod *corev1.Pod, config *Config) (*VaultConfig, error) {
 	var tmpl bytes.Buffer
 
 	funcMap := template.FuncMap{
@@ -129,12 +159,12 @@ func InjectData(pod *corev1.Pod, config *Config) (*SideCarConfig, error) {
 		return nil, err
 	}
 
-	var sic SideCarConfig
+	var sic VaultConfig
 	if err := yaml.Unmarshal(tmpl.Bytes(), &sic); err != nil {
 		log.Errorf("Failed to unmarshall template %v %s", err, string(tmpl.Bytes()))
 		return nil, err
 	}
-	log.Debugln("SideCarConfig: ", sic)
+	log.Debugln("VaultConfig: ", sic)
 	return &sic, nil
 }
 

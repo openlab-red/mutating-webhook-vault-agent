@@ -25,12 +25,12 @@ func Start() {
 }
 
 func webhook(engine *gin.Engine) {
-	config, err := LoadConfig("/var/run/secrets/kubernetes.io/config/sidecarconfig.yaml")
-	if err != nil {
-		log.Errorln(err)
-	}
+
+	config := Config{}
+	Load("/var/run/secrets/kubernetes.io/config/sidecarconfig.yaml", &config)
+
 	wk := WebHook{
-		config: config,
+		config: &config,
 	}
 	engine.POST("/mutate", wk.mutate)
 }

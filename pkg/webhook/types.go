@@ -3,22 +3,19 @@ package webhook
 import corev1 "k8s.io/api/core/v1"
 
 type WebHook struct {
-	config        *Config
-	sidecarConfig *SideCarConfig
+	config      *Config
+	vaultConfig *VaultConfig
 }
 
 type Config struct {
 	Template string `json:"template"`
+	VaultAgentConfig string `json:"vault-agent-config"`
+
 }
 
-type VaultAgentConfig struct {
-	Config string `json:"vault-agent-config"`
-}
-
-type SideCarConfig struct {
+type VaultConfig struct {
 	Containers []corev1.Container `yaml:"containers"`
 	Volumes    []corev1.Volume    `yaml:"volumes"`
-	ConfigMaps []corev1.ConfigMap `yaml:"configMaps"`
 }
 
 type PatchOperation struct {
