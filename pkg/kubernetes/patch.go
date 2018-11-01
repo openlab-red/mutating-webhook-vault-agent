@@ -96,7 +96,7 @@ func updateAnnotation(target map[string]string, added map[string]string) (patch 
 func createPatch(pod *corev1.Pod, sidecarInject *SidecarInject, annotations map[string]string) ([]byte, error) {
 	var patch []PatchOperation
 
-	log.Debugln(sidecarInject.VolumeMount)
+	log.Debugln("VolumeMounts:", sidecarInject.VolumeMount)
 	patch = append(patch, addVolumeMount(pod.Spec.Containers[0].VolumeMounts, sidecarInject.VolumeMount, "/spec/containers/0/volumeMounts")...)
 	patch = append(patch, addContainer(pod.Spec.Containers, sidecarInject.Containers, "/spec/containers")...)
 	patch = append(patch, addVolume(pod.Spec.Volumes, sidecarInject.Volumes, "/spec/volumes")...)
