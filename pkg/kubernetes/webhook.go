@@ -11,7 +11,6 @@ import (
 	"k8s.io/kubernetes/pkg/apis/core/v1"
 	"net/http"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 const (
@@ -19,7 +18,6 @@ const (
 )
 
 var (
-	log           = logrus.New()
 	runtimeScheme = runtime.NewScheme()
 	codecs        = serializer.NewCodecFactory(runtimeScheme)
 	deserializer  = codecs.UniversalDeserializer()
@@ -141,14 +139,4 @@ func init() {
 	_ = corev1.AddToScheme(runtimeScheme)
 	_ = admissionregistrationv1beta1.AddToScheme(runtimeScheme)
 	_ = v1.AddToScheme(runtimeScheme)
-
-	level, err := logrus.ParseLevel(viper.GetString("log-level"))
-	if err != nil {
-		log.Fatalln(err)
-	} else {
-		log.Level = level
-	}
-	log.SetFormatter(&logrus.TextFormatter{
-		FullTimestamp: true,
-	})
 }

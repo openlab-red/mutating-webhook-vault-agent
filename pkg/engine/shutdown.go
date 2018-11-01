@@ -9,7 +9,10 @@ import (
 	"syscall"
 	"time"
 	"context"
+	"github.com/openlab-red/mutating-webhook-vault-agent/pkg/kubernetes"
 )
+
+var log = kubernetes.Log()
 
 func shutdown(engine *gin.Engine) {
 	srv := &http.Server{

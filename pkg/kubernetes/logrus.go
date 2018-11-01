@@ -1,4 +1,4 @@
-package engine
+package kubernetes
 
 import (
 	"github.com/gin-gonic/gin"
@@ -23,6 +23,10 @@ func InitLogrus(engine *gin.Engine) {
 	})
 	engine.Use(LoggerWithLogrus(log))
 
+}
+
+func Log() *logrus.Logger {
+	return log
 }
 
 func LoggerWithLogrus(log *logrus.Logger) gin.HandlerFunc {
