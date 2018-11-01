@@ -11,18 +11,14 @@ import (
 	"k8s.io/kubernetes/pkg/apis/core/v1"
 	"net/http"
 	"github.com/sirupsen/logrus"
-	"strings"
-	"text/template"
-	"bytes"
-	"github.com/ghodss/yaml"
-	"encoding/json"
 )
 
-const vaultConfigMapName = "vault-agent-config"
-
-var log = logrus.New()
+const (
+	vaultConfigMapName = "vault-agent-config"
+)
 
 var (
+	log           = logrus.New()
 	runtimeScheme = runtime.NewScheme()
 	codecs        = serializer.NewCodecFactory(runtimeScheme)
 	deserializer  = codecs.UniversalDeserializer()
@@ -87,14 +83,14 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 		"UserInfo":       req.UserInfo,
 	}).Infoln("AdmissionReview for")
 
-	if !injectionRequired(ignoredNamespaces, &pod) {
+	if !injectRequired(ignoredNamespaces, &pod) {
 		return &v1beta1.AdmissionResponse{
 			Allowed: true,
 		}
 	}
 
-	//vault Config map
-	_, err = ensureConfigMap(pod, wk)
+	//vault SidecarConfig map
+	_, err = ensureConfigMap(pod, wk, vaultConfigMapName)
 	if err != nil {
 		return ToAdmissionResponse(err)
 	}
@@ -105,19 +101,28 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 		TokenVolume: FindTokenVolumeName(pod.Spec.Volumes),
 	}
 
-	wk.VaultConfig, err = InjectData(&data, wk.Config)
+	wk.VaultConfig, err = injectData(&data, wk.SidecarConfig)
 	if err != nil {
 		return ToAdmissionResponse(err)
 	}
 	annotations := map[string]string{annotationStatus.name: "injected"}
 
 	//patch
-	patches, err := CreatePatch(&pod, wk.VaultConfig, annotations)
+	patches, err := createPatch(&pod, wk.VaultConfig, annotations)
 	if err != nil {
 		return ToAdmissionResponse(err)
 	}
 
 	log.Debugf("AdmissionResponse: patch=%v\n", string(patches))
+
+	log.WithFields(logrus.Fields{
+		"Kind":           req.Kind,
+		"Namespace":      req.Namespace,
+		"Name":           pod.Name,
+		"UID":            req.UID,
+		"PatchOperation": req.Operation,
+		"UserInfo":       req.UserInfo,
+	}).Infoln("AdmissionResponse Allowed for")
 
 	return &v1beta1.AdmissionResponse{
 		Allowed: true,
@@ -127,117 +132,6 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 			return &pt
 		}(),
 	}
-}
-
-func ensureConfigMap(pod corev1.Pod, wk *WebHook) (*corev1.ConfigMap, error) {
-	client := Client()
-	configMaps := client.CoreV1().ConfigMaps(pod.Namespace)
-	_, err := configMaps.Get(vaultConfigMapName, metav1.GetOptions{})
-	if err != nil {
-		var data map[string]string
-		data = make(map[string]string)
-		data[vaultConfigMapName] = wk.Config.VaultAgentConfig
-		configMap := corev1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      vaultConfigMapName,
-				Namespace: pod.Namespace,
-			},
-			Data: data,
-		}
-		return configMaps.Create(&configMap)
-	}
-	return nil, nil
-
-}
-
-func InjectData(data *SidecarData, config *Config) (*VaultConfig, error) {
-	var tmpl bytes.Buffer
-
-	funcMap := template.FuncMap{
-		"valueOrDefault": valueOrDefault,
-		"toJSON":         toJSON,
-	}
-
-	temp := template.New("inject")
-	t := template.Must(temp.Funcs(funcMap).Parse(config.Template))
-
-	if err := t.Execute(&tmpl, &data); err != nil {
-		log.Errorf("Failed to execute template %v %s", err, config.Template)
-		return nil, err
-	}
-
-	var sic VaultConfig
-	if err := yaml.Unmarshal(tmpl.Bytes(), &sic); err != nil {
-		log.Errorf("Failed to unmarshall template %v %s", err, string(tmpl.Bytes()))
-		return nil, err
-	}
-	log.Debugln("VaultConfig: ", sic)
-	return &sic, nil
-}
-
-func injectionRequired(ignored []string, pod *corev1.Pod) bool {
-	var status, inject string
-	required := false
-	metadata := pod.ObjectMeta
-
-	// skip special kubernetes system namespaces
-	for _, namespace := range ignored {
-		if metadata.Namespace == namespace {
-			return false
-		}
-	}
-
-	annotations := metadata.GetAnnotations()
-	log.Debugf("Annotations: %v", annotations)
-
-	if annotations != nil {
-		status = annotations[annotationStatus.name]
-
-		log.Debugln(status)
-		if strings.ToLower(status) == "injected" {
-			required = false
-		} else {
-			inject = annotations[annotationPolicy.name]
-			log.Debugln(inject)
-			switch strings.ToLower(inject) {
-			default:
-				required = false
-			case "y", "yes", "true", "on":
-				required = true
-			}
-		}
-	}
-
-	log.WithFields(logrus.Fields{
-		"name":      metadata.Name,
-		"namespace": metadata.Namespace,
-		"status":    status,
-		"inject":    inject,
-		"required":  required,
-	}).Infoln("Mutation policy")
-
-	return required
-}
-
-func valueOrDefault(value string, defaultValue string) string {
-	if value == "" {
-		return defaultValue
-	}
-	return value
-}
-
-func toJSON(m map[string]string) string {
-	if m == nil {
-		return "{}"
-	}
-
-	ba, err := json.Marshal(m)
-	if err != nil {
-		log.Warnf("Unable to marshal %v", m)
-		return "{}"
-	}
-
-	return string(ba)
 }
 
 func init() {

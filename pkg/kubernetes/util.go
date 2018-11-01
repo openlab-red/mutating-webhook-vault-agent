@@ -8,7 +8,6 @@ import (
 	"strings"
 )
 
-
 func Pod(raw []byte, pod *corev1.Pod) (error) {
 
 	log.Debugf("Object: %v", string(raw))
@@ -21,6 +20,7 @@ func Pod(raw []byte, pod *corev1.Pod) (error) {
 }
 
 func ToAdmissionResponse(err error) *v1beta1.AdmissionResponse {
+	log.Errorln(err)
 	return &v1beta1.AdmissionResponse{
 		Result: &metav1.Status{
 			Message: err.Error(),

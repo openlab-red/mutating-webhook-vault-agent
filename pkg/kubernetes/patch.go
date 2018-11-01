@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 )
 
-func AddContainer(target, added []corev1.Container, basePath string) (patch []PatchOperation) {
+func addContainer(target, added []corev1.Container, basePath string) (patch []PatchOperation) {
 	first := len(target) == 0
 	var value interface{}
 	for _, add := range added {
@@ -26,7 +26,7 @@ func AddContainer(target, added []corev1.Container, basePath string) (patch []Pa
 	return patch
 }
 
-func AddVolume(target, added []corev1.Volume, basePath string) (patch []PatchOperation) {
+func addVolume(target, added []corev1.Volume, basePath string) (patch []PatchOperation) {
 	first := len(target) == 0
 	var value interface{}
 	for _, add := range added {
@@ -47,7 +47,7 @@ func AddVolume(target, added []corev1.Volume, basePath string) (patch []PatchOpe
 	return patch
 }
 
-func AddVolumeMount(target, added []corev1.VolumeMount, basePath string) (patch []PatchOperation) {
+func addVolumeMount(target, added []corev1.VolumeMount, basePath string) (patch []PatchOperation) {
 	first := len(target) == 0
 	var value interface{}
 	for _, add := range added {
@@ -71,7 +71,7 @@ func AddVolumeMount(target, added []corev1.VolumeMount, basePath string) (patch 
 	return patch
 }
 
-func UpdateAnnotation(target map[string]string, added map[string]string) (patch []PatchOperation) {
+func updateAnnotation(target map[string]string, added map[string]string) (patch []PatchOperation) {
 	for key, value := range added {
 		if target == nil || target[key] == "" {
 			target = map[string]string{}
@@ -93,18 +93,13 @@ func UpdateAnnotation(target map[string]string, added map[string]string) (patch 
 	return patch
 }
 
-func CreatePatch(pod *corev1.Pod, sidecarConfig *VaultConfig, annotations map[string]string) ([]byte, error) {
+func createPatch(pod *corev1.Pod, sidecarInject *SidecarInject, annotations map[string]string) ([]byte, error) {
 	var patch []PatchOperation
-	var volumeMounts []corev1.VolumeMount
 
-	volumeMount := FindVolumeMount(sidecarConfig.Containers[0].VolumeMounts, "vault-agent-volume")
-	volumeMounts = append(volumeMounts, volumeMount)
-	log.Debugf("VolumeMounts: %v", volumeMounts)
-
-	patch = append(patch, AddVolumeMount(pod.Spec.Containers[0].VolumeMounts, volumeMounts, "/spec/containers/0/volumeMounts")...)
-	patch = append(patch, AddContainer(pod.Spec.Containers, sidecarConfig.Containers, "/spec/containers")...)
-	patch = append(patch, AddVolume(pod.Spec.Volumes, sidecarConfig.Volumes, "/spec/volumes")...)
-	patch = append(patch, UpdateAnnotation(pod.Annotations, annotations)...)
+	patch = append(patch, addVolumeMount(pod.Spec.Containers[0].VolumeMounts, sidecarInject.VolumeMount, "/spec/containers/0/volumeMounts")...)
+	patch = append(patch, addContainer(pod.Spec.Containers, sidecarInject.Containers, "/spec/containers")...)
+	patch = append(patch, addVolume(pod.Spec.Volumes, sidecarInject.Volumes, "/spec/volumes")...)
+	patch = append(patch, updateAnnotation(pod.Annotations, annotations)...)
 
 	log.Debugf("Patch: %v", patch)
 	return json.Marshal(patch)

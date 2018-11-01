@@ -11,11 +11,11 @@ type PatchOperation struct {
 }
 
 type WebHook struct {
-	Config      *Config
-	VaultConfig *VaultConfig
+	SidecarConfig *SidecarConfig
+	VaultConfig   *SidecarInject
 }
 
-type Config struct {
+type SidecarConfig struct {
 	Template         string `json:"template"`
 	VaultAgentConfig string `json:"vault-agent-config"`
 }
@@ -25,9 +25,10 @@ type SidecarData struct {
 	TokenVolume string
 }
 
-type VaultConfig struct {
+type SidecarInject struct {
 	Containers []corev1.Container `yaml:"containers"`
 	Volumes    []corev1.Volume    `yaml:"volumes"`
+	VolumeMount []corev1.VolumeMount `yaml:"volumeMounts"`
 }
 
 type registeredAnnotation struct {
@@ -37,15 +38,4 @@ type registeredAnnotation struct {
 
 type annotationValidationFunc func(value string) error
 
-type SideCarFile struct {
-	Template         string `json:"template"`
-	VaultAgentConfig string `json:"vault-agent-config"`
-	VaultVolumeMount string `json:"vault-volume"`
-}
-
-type SideCarInject struct {
-	Containers  []corev1.Container `yaml:"containers"`
-	Volumes     []corev1.Volume    `yaml:"volumes"`
-	VolumeMount []corev1.VolumeMount `yaml:"volumesMounts"`
-}
 

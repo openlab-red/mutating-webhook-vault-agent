@@ -24,11 +24,11 @@ func Start() {
 
 func hook(engine *gin.Engine) {
 
-	sideCarFile := kubernetes.Config{}
-	load("/var/run/secrets/kubernetes.io/config/sidecarconfig.yaml", &sideCarFile)
+	sidecarConfig := kubernetes.SidecarConfig{}
+	load("/var/run/secrets/kubernetes.io/config/sidecarconfig.yaml", &sidecarConfig)
 
 	wk := kubernetes.WebHook{
-		Config: &sideCarFile,
+		SidecarConfig: &sidecarConfig,
 	}
 
 	engine.POST("/mutate", wk.Mutate)
@@ -47,5 +47,5 @@ func load(file string, c interface{}) {
 	}
 
 	log.Debugf("New configuration: sha256sum %x", sha256.Sum256(data))
-	log.Debugf("Config: %v", c)
+	log.Infof("SidecarConfig: %v", c)
 }
