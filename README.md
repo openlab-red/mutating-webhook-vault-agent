@@ -64,7 +64,8 @@
                                        "template": {
                                          "metadata": {
                                            "annotations": {
-                                             "sidecar.agent.vaultproject.io/inject": "true"
+                                             "sidecar.agent.vaultproject.io/inject": "true",
+                                             "sidecar.agent.vaultproject.io/secret-key": "secret/example"
                                            }
                                          }
                                        }

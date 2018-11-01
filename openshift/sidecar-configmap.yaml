@@ -54,7 +54,7 @@ data:
           - name: VAULT_TOKEN
             value: /var/run/secrets/vaultproject.io/token
           - name: VAULT_SECRET
-            value: secret/example
+            value: {{ .VaultSecret }}
           - name: PROPERTIES_FILE
             value: /var/run/secrets/vaultproject.io/application.yaml
         imagePullPolicy: Always
