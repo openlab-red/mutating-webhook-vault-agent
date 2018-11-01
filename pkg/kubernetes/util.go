@@ -37,12 +37,10 @@ func Pod(raw []byte, pod *corev1.Pod) (error) {
 	return nil
 }
 
-func GetAnnotationValue(pod corev1.Pod, name string) string {
+func GetAnnotationValue(pod corev1.Pod, name *registeredAnnotation, defaultValue string) string {
 	metadata := pod.ObjectMeta
 	annotations := metadata.GetAnnotations()
-	log.Debugf("Annotations: %v", annotations)
-
-	return annotations[name]
+	return name.getValueOrDefault(annotations, defaultValue)
 }
 
 func ToAdmissionResponse(err error) *v1beta1.AdmissionResponse {
@@ -89,4 +87,11 @@ func FindVolumeMount(volumes []corev1.VolumeMount, name string) (corev1.VolumeMo
 		}
 	}
 	return corev1.VolumeMount{}
+}
+
+func (v *registeredAnnotation) getValueOrDefault(annotations map[string]string, defaultValue string) string {
+	if val, ok := annotations[v.name]; ok {
+		return val
+	}
+	return defaultValue
 }
