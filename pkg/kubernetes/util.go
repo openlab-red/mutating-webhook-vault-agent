@@ -19,6 +19,14 @@ func Pod(raw []byte, pod *corev1.Pod) (error) {
 	return nil
 }
 
+func GetAnnotationValue(pod corev1.Pod, name string) string {
+	metadata := pod.ObjectMeta
+	annotations := metadata.GetAnnotations()
+	log.Debugf("Annotations: %v", annotations)
+
+	return annotations[name]
+}
+
 func ToAdmissionResponse(err error) *v1beta1.AdmissionResponse {
 	log.Errorln(err)
 	return &v1beta1.AdmissionResponse{

@@ -11,6 +11,7 @@ import (
 	"k8s.io/kubernetes/pkg/apis/core/v1"
 	"net/http"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -35,6 +36,7 @@ var (
 
 	annotationPolicy = annotationRegistry[0]
 	annotationStatus = annotationRegistry[1]
+	annotationSecret = annotationRegistry[2]
 
 	ignoredNamespaces = []string{
 		metav1.NamespaceSystem,
@@ -99,6 +101,7 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 	data := SidecarData{
 		Container:   pod.Spec.Containers[0],
 		TokenVolume: FindTokenVolumeName(pod.Spec.Volumes),
+		VaultSecret: GetAnnotationValue(pod, annotationSecret.name),
 	}
 
 	wk.VaultConfig, err = injectData(&data, wk.SidecarConfig)
@@ -138,4 +141,14 @@ func init() {
 	_ = corev1.AddToScheme(runtimeScheme)
 	_ = admissionregistrationv1beta1.AddToScheme(runtimeScheme)
 	_ = v1.AddToScheme(runtimeScheme)
+
+	level, err := logrus.ParseLevel(viper.GetString("log-level"))
+	if err != nil {
+		log.Fatalln(err)
+	} else {
+		log.Level = level
+	}
+	log.SetFormatter(&logrus.TextFormatter{
+		FullTimestamp: true,
+	})
 }
