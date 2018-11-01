@@ -1,4 +1,5 @@
 FROM go-dep:latest
+LABEL authors="Mattia Mascia <mmascia@redhat.com>"
 
 COPY . ./
 
