@@ -56,7 +56,9 @@ data:
           - name: VAULT_SECRET
             value: {{ .VaultSecret }}
           - name: PROPERTIES_FILE
-            value: /var/run/secrets/vaultproject.io/application.yaml
+            value: /var/run/secrets/vaultproject.io/application.{{ .PropertiesExt }}
+          - name: PROPERTIES_TYPE
+            value: {{ .PropertiesExt }}
         imagePullPolicy: Always
         resources: {}
         terminationMessagePath: /dev/termination-log

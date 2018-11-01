@@ -66,6 +66,7 @@
                                            "annotations": {
                                              "sidecar.agent.vaultproject.io/inject": "true",
                                              "sidecar.agent.vaultproject.io/secret-key": "secret/example"
+                                             "sidecar.agent.vaultproject.io/properties-ext": "yaml"
                                            }
                                          }
                                        }
@@ -76,6 +77,7 @@
     * Create the vault agent configmap, if does not exist yet
     * Inject Vault agent sidecar container
     * Inject Vault secret fetcher sidecar container
+    * Mount Vault volume to the app container
 
 # References
 

@@ -30,11 +30,13 @@ var (
 		{"sidecar.agent.vaultproject.io/inject", alwaysValidFunc},
 		{"sidecar.agent.vaultproject.io/status", alwaysValidFunc},
 		{"sidecar.agent.vaultproject.io/secret-key", alwaysValidFunc},
+		{"sidecar.agent.vaultproject.io/properties-ext", alwaysValidFunc},
 	}
 
 	annotationPolicy = annotationRegistry[0]
 	annotationStatus = annotationRegistry[1]
 	annotationSecret = annotationRegistry[2]
+	annotationPropertiesExt = annotationRegistry[2]
 
 	ignoredNamespaces = []string{
 		metav1.NamespaceSystem,
@@ -100,6 +102,7 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 		Container:   pod.Spec.Containers[0],
 		TokenVolume: FindTokenVolumeName(pod.Spec.Volumes),
 		VaultSecret: GetAnnotationValue(pod, annotationSecret.name),
+		PropertiesExt: GetAnnotationValue(pod, annotationPropertiesExt.name),
 	}
 
 	wk.VaultConfig, err = injectData(&data, wk.SidecarConfig)

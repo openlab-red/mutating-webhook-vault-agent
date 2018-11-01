@@ -24,6 +24,7 @@ type SidecarData struct {
 	Container   corev1.Container
 	TokenVolume string
 	VaultSecret string
+	PropertiesExt string
 }
 
 type SidecarInject struct {
