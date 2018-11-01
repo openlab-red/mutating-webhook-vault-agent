@@ -26,11 +26,6 @@ var (
 		return nil
 	}
 
-	defaultValueFunc = func(value string) error {
-
-		return nil
-	}
-
 	annotationRegistry = []*registeredAnnotation{
 		{"sidecar.agent.vaultproject.io/inject", alwaysValidFunc},
 		{"sidecar.agent.vaultproject.io/status", alwaysValidFunc},
