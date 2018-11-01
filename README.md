@@ -17,9 +17,8 @@
     ```
 
 2. Process Mutating WebHook Template.
-
-    The template is going to create the following resources:
-
+   
+   The template is going to create the following resources:
     * vault-agent-webhook-psp PodSecurityPolicy
     * vault-agent-webhook-clusterrole ClusterRole
     * vault-agent-webhook ServiceAccount
@@ -27,24 +26,26 @@
     * vault-agent-webhook Service
     * vault-agent-webhook DeploymentConfig
     * vault-agent-webhook MutatingWebhookConfiguration
+    
+   2.1 Get service-ca.crt from the vault pod
 
+    ```
+    pod=$(oc get pods -lapp=vault --no-headers -o custom-columns=NAME:.metadata.name)
+    export CA_BUNDLE=$(oc exec $pod -- cat /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt | base64 | tr -d '\n')
+    ```
 
-    3.1 Get service-ca.crt from the vault pod
+   2.2 Process the webhook-template
 
-        ```
-        pod=$(oc get pods -lapp=vault --no-headers -o custom-columns=NAME:.metadata.name)
-        export CA_BUNDLE=$(oc exec $pod -- cat /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt | base64 | tr -d '\n')
-        ```
+    ```
+    oc process -f openshift/webhook-template.yaml -p CA_BUNDLE=${CA_BUNDLE} | oc create -f -
+    ```
 
-    3.2 Process the webhook-template
-
-        ```
-        oc process -f openshift/webhook-template.yaml -p CA_BUNDLE=${CA_BUNDLE} | oc create -f -
-        ```
-
-        >
-        > The VAULT_NAMESPACE has hashicorp-vault as default value
-        >
+    |     PARAMETER   |  DEFAULT           |  DESCRIPTION                                                              |
+    |-----------------|--------------------|---------------------------------------------------------------------------|
+    | CA_BUNDLE       |                    |    CA used by kubernetes to trust the webhook                             |
+    | VAULT_NAMESPACE |    hashicorp-vault |    Hashicorp Vault Namespac                                               |
+    | GIN_MODE        |    release         |    Http server startup mode [gin-gonic](https://github.com/gin-gonic/gin) |
+    | LOG_LEVEL       |    INFO            |    Log level from [logrus](https://github.com/sirupsen/logrus)            |
 
 ## Verify Sidecar Injection
 
