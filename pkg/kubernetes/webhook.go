@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 )
 
-const vaultConfigMapName = "vault-agent-Config"
+const vaultConfigMapName = "vault-agent-config"
 
 var log = logrus.New()
 

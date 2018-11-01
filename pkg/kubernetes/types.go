@@ -17,7 +17,7 @@ type WebHook struct {
 
 type Config struct {
 	Template         string `json:"template"`
-	VaultAgentConfig string `json:"vault-agent-Config"`
+	VaultAgentConfig string `json:"vault-agent-config"`
 }
 
 type SidecarData struct {
@@ -39,7 +39,7 @@ type annotationValidationFunc func(value string) error
 
 type SideCarFile struct {
 	Template         string `json:"template"`
-	VaultAgentConfig string `json:"vault-agent-Config"`
+	VaultAgentConfig string `json:"vault-agent-config"`
 	VaultVolumeMount string `json:"vault-volume"`
 }
 
