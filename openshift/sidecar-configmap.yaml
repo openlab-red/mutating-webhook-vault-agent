@@ -6,8 +6,8 @@ data:
   sidecarconfig.yaml: |
     template: |-
       volumeMounts:
-        - mountPath: /var/run/secrets/vaultproject.io
-          name: vault-agent-volume
+      - mountPath: /var/run/secrets/vaultproject.io
+        name: vault-agent-volume
       containers:
       - image: vault:latest
         name: vault-agent

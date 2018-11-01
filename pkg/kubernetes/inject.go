@@ -34,6 +34,16 @@ func injectData(data *SidecarData, config *SidecarConfig) (*SidecarInject, error
 		log.Errorf("Failed to unmarshall template %v %s", err, string(tmpl.Bytes()))
 		return nil, err
 	}
+
+	// TODO: seems not working the inject to volumeMounts
+
+	var volumeMounts []corev1.VolumeMount
+	volumeMount := FindVolumeMount(sic.Containers[0].VolumeMounts, "vault-agent-volume")
+	volumeMounts = append(volumeMounts, volumeMount)
+	sic.VolumeMount = volumeMounts
+
+	//
+
 	log.Debugln("SidecarInject: ", sic)
 	return &sic, nil
 }
