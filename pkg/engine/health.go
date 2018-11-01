@@ -1,8 +1,8 @@
-package webhook
+package engine
 
 import "github.com/gin-gonic/gin"
 
-func Health(c *gin.Context) {
+func health(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"status": "UP",
 	})

@@ -1,4 +1,4 @@
-package webhook
+package kubernetes
 
 import (
 	"github.com/gin-gonic/gin"
@@ -18,7 +18,9 @@ import (
 	"encoding/json"
 )
 
-const vaultConfigMapName = "vault-agent-config"
+const vaultConfigMapName = "vault-agent-Config"
+
+var log = logrus.New()
 
 var (
 	runtimeScheme = runtime.NewScheme()
@@ -44,7 +46,7 @@ var (
 	}
 )
 
-func (wk *WebHook) mutate(context *gin.Context) {
+func (wk *WebHook) Mutate(context *gin.Context) {
 
 	ar := v1beta1.AdmissionReview{}
 
@@ -91,7 +93,7 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 		}
 	}
 
-	//vault config map
+	//vault Config map
 	_, err = ensureConfigMap(pod, wk)
 	if err != nil {
 		return ToAdmissionResponse(err)
@@ -103,14 +105,14 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 		TokenVolume: FindTokenVolumeName(pod.Spec.Volumes),
 	}
 
-	wk.vaultConfig, err = InjectData(&data, wk.config)
+	wk.VaultConfig, err = InjectData(&data, wk.Config)
 	if err != nil {
 		return ToAdmissionResponse(err)
 	}
 	annotations := map[string]string{annotationStatus.name: "injected"}
 
 	//patch
-	patches, err := CreatePatch(&pod, wk.vaultConfig, annotations)
+	patches, err := CreatePatch(&pod, wk.VaultConfig, annotations)
 	if err != nil {
 		return ToAdmissionResponse(err)
 	}
@@ -134,7 +136,7 @@ func ensureConfigMap(pod corev1.Pod, wk *WebHook) (*corev1.ConfigMap, error) {
 	if err != nil {
 		var data map[string]string
 		data = make(map[string]string)
-		data[vaultConfigMapName] = wk.config.VaultAgentConfig
+		data[vaultConfigMapName] = wk.Config.VaultAgentConfig
 		configMap := corev1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      vaultConfigMapName,

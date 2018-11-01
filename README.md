@@ -1,51 +1,54 @@
 # Mutating Webhook Vault Agent
 
-## Build Vault Agent Webhook
+## Build Vault Agent Webhook container
 
 ```
-    cd openshift/
-
     oc project hashicorp-vault
 
-    oc create -f build/go-dep-build.yaml
-    oc create -f build/vault-agent-webhook-build.yaml
+    oc create -f openshift/webhook-build.yaml
 ```
 
 ## Deploy Vault Agent WebHook
 
-1. Configuration
+1. Create the sidecar vault agent configuration
 
     ```
-    oc create -f template/webhook-configmap.yaml
-    oc create -f template/vault-agent-configmap.yaml
-    oc create -f template/webhook-service.yaml
-    oc create -f template/webhook-podsecuritypolicy.yaml
+    oc create -f openshift/sidecar-configmap.yaml
     ```
 
-2. Deployment
+2. Process Mutating WebHook Template.
 
-    ```
-    oc create -f template/webhook-deployment.yaml
-    ```
+    The template is going to create the following resources:
 
-3. Create Mutating WebHook
+    * vault-agent-webhook-psp PodSecurityPolicy
+    * vault-agent-webhook-clusterrole ClusterRole
+    * vault-agent-webhook ServiceAccount
+    * vault-agent-webhook-rolebinding ClusterRoleBinding
+    * vault-agent-webhook Service
+    * vault-agent-webhook DeploymentConfig
+    * vault-agent-webhook MutatingWebhookConfiguration
 
-    3.1 Get service-ca.crt
+
+    3.1 Get service-ca.crt from the vault pod
 
         ```
-        pod=$(oc get pods -lapp=vault-agent-webhook --no-headers -o custom-columns=NAME:.metadata.name)
+        pod=$(oc get pods -lapp=vault --no-headers -o custom-columns=NAME:.metadata.name)
         export CA_BUNDLE=$(oc exec $pod -- cat /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt | base64 | tr -d '\n')
         ```
 
-    3.2 Create the webhook
+    3.2 Process the webhook-template
 
         ```
-        oc process -f template/webhook-mutating-config.yaml -p CA_BUNDLE=${CA_BUNDLE} | oc create -f -
+        oc process -f openshift/webhook-template.yaml -p CA_BUNDLE=${CA_BUNDLE} | oc create -f -
         ```
 
-## Verify Injection
+        >
+        > The VAULT_NAMESPACE has hashicorp-vault as default value
+        >
 
-1. Label the project where you want the webhook to listen.
+## Verify Sidecar Injection
+
+1. Label the target project where you want the webhook to inject the vault agent sidecar container.
 
     ```
     oc label namespace app vault-agent-webhook=enabled

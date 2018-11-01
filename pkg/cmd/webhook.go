@@ -3,7 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/openlab-red/mutating-webhook-vault-agent/pkg/webhook"
+	"github.com/openlab-red/mutating-webhook-vault-agent/pkg/engine"
 )
 
 var handlerCmd = &cobra.Command{
@@ -11,7 +11,7 @@ var handlerCmd = &cobra.Command{
 	Short: "Start webhook server",
 	Long:  `Start webhook server`,
 	Run: func(cmd *cobra.Command, args []string) {
-		webhook.Start()
+		engine.Start()
 	},
 }
 

@@ -1,39 +1,15 @@
-package webhook
+package engine
 
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"github.com/spf13/viper"
 	"os"
 	"os/signal"
-	"context"
-	"time"
 	"syscall"
-	"github.com/spf13/viper"
+	"time"
+	"context"
 )
-
-func Start() {
-	var engine = gin.New()
-
-	InitLogrus(engine)
-
-	engine.GET("/health", Health)
-
-	webhook(engine)
-
-	engine.RunTLS(":"+viper.GetString("port"), "/var/run/secrets/kubernetes.io/certs/tls.crt", "/var/run/secrets/kubernetes.io/certs/tls.key")
-	shutdown(engine)
-}
-
-func webhook(engine *gin.Engine) {
-
-	config := Config{}
-	Load("/var/run/secrets/kubernetes.io/config/sidecarconfig.yaml", &config)
-
-	wk := WebHook{
-		config: &config,
-	}
-	engine.POST("/mutate", wk.mutate)
-}
 
 func shutdown(engine *gin.Engine) {
 	srv := &http.Server{
