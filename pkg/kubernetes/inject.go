@@ -27,6 +27,8 @@ func injectData(data *SidecarData, config *SidecarConfig) (*SidecarInject, error
 		return nil, err
 	}
 
+	log.Debugf("Template executed, %s", string(tmpl.Bytes()))
+
 	var sic SidecarInject
 	if err := yaml.Unmarshal(tmpl.Bytes(), &sic); err != nil {
 		log.Errorf("Failed to unmarshall template %v %s", err, string(tmpl.Bytes()))
