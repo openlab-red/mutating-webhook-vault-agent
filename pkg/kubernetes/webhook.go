@@ -36,7 +36,7 @@ var (
 	annotationPolicy = annotationRegistry[0]
 	annotationStatus = annotationRegistry[1]
 	annotationSecret = annotationRegistry[2]
-	annotationPropertiesExt = annotationRegistry[2]
+	annotationPropertiesExt = annotationRegistry[3]
 
 	ignoredNamespaces = []string{
 		metav1.NamespaceSystem,
