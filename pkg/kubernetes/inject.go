@@ -13,14 +13,14 @@ import (
 
 func injectData(data *SidecarData, config *SidecarConfig) (*SidecarInject, error) {
 
-	var sic *SidecarInject
+	sic := SidecarInject{}
 
 	tmpl, err := executeTemplate(config.Template, data)
 	if err != nil {
 		return nil, err
 	}
 
-	err = unmarshalTemplate(tmpl, sic)
+	err = unmarshalTemplate(tmpl, &sic)
 	if err != nil {
 		return nil, err
 	}
