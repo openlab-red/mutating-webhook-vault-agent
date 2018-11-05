@@ -21,16 +21,17 @@ type SidecarConfig struct {
 }
 
 type SidecarData struct {
-	Container   corev1.Container
-	TokenVolume string
-	VaultSecret string
+	Name          string
+	Container     corev1.Container
+	TokenVolume   string
+	VaultSecret   string
 	PropertiesExt string
-	VaultRole string
+	VaultRole     string
 }
 
 type SidecarInject struct {
-	Containers []corev1.Container `yaml:"containers"`
-	Volumes    []corev1.Volume    `yaml:"volumes"`
+	Containers  []corev1.Container   `yaml:"containers"`
+	Volumes     []corev1.Volume      `yaml:"volumes"`
 	VolumeMount []corev1.VolumeMount `yaml:"volumeMounts"`
 }
 
@@ -40,5 +41,3 @@ type registeredAnnotation struct {
 }
 
 type annotationValidationFunc func(value string) error
-
-

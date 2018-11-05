@@ -11,6 +11,10 @@ import (
 	"encoding/json"
 )
 
+const (
+	VaultAgentConfig = "vault-agent-config"
+)
+
 func injectData(data *SidecarData, config *SidecarConfig) (*SidecarInject, error) {
 
 	sic := SidecarInject{}
@@ -82,9 +86,10 @@ func injectRequired(ignored []string, pod *corev1.Pod) bool {
 	return required
 }
 
-func ensureConfigMap(pod corev1.Pod, wk *WebHook, name string, sidecarData *SidecarData) (*corev1.ConfigMap, error) {
+func ensureConfigMap(pod corev1.Pod, wk *WebHook, sidecarData *SidecarData) (*corev1.ConfigMap, error) {
 	client := Client()
 	configMaps := client.CoreV1().ConfigMaps(pod.Namespace)
+	name := VaultAgentConfig + "-" + sidecarData.Name
 	_, err := configMaps.Get(name, metav1.GetOptions{})
 	if err != nil {
 		data := make(map[string]string)
@@ -105,6 +110,7 @@ func ensureConfigMap(pod corev1.Pod, wk *WebHook, name string, sidecarData *Side
 			},
 			Data: data,
 		}
+
 		return configMaps.Create(&configMap)
 	}
 	return nil, nil
