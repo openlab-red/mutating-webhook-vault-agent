@@ -98,7 +98,7 @@ func ensureConfigMap(pod corev1.Pod, wk *WebHook, sidecarData *SidecarData) (*co
 			return nil, err
 		}
 
-		data[name] = string(tmpl.Bytes())
+		data[VaultAgentConfig] = string(tmpl.Bytes())
 		annotations := make(map[string]string)
 		annotations["vault-agent.vaultproject.io"] = "generated"
 
