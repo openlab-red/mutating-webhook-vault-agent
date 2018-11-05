@@ -12,26 +12,16 @@ import (
 )
 
 func injectData(data *SidecarData, config *SidecarConfig) (*SidecarInject, error) {
-	var tmpl bytes.Buffer
 
-	funcMap := template.FuncMap{
-		"valueOrDefault": valueOrDefault,
-		"toJSON":         toJSON,
-	}
+	var sic *SidecarInject
 
-	temp := template.New("inject")
-	t := template.Must(temp.Funcs(funcMap).Parse(config.Template))
-
-	if err := t.Execute(&tmpl, &data); err != nil {
-		log.Errorf("Failed to execute template %v %s", err, config.Template)
+	tmpl, err := executeTemplate(config.Template, data)
+	if err != nil {
 		return nil, err
 	}
 
-	log.Debugf("Template executed, %s", string(tmpl.Bytes()))
-
-	var sic SidecarInject
-	if err := yaml.Unmarshal(tmpl.Bytes(), &sic); err != nil {
-		log.Errorf("Failed to unmarshall template %v %s", err, string(tmpl.Bytes()))
+	err = unmarshalTemplate(tmpl, sic)
+	if err != nil {
 		return nil, err
 	}
 
@@ -45,7 +35,7 @@ func injectData(data *SidecarData, config *SidecarConfig) (*SidecarInject, error
 	//
 
 	log.Debugln("SidecarInject: ", sic)
-	return &sic, nil
+	return sic, nil
 }
 
 func injectRequired(ignored []string, pod *corev1.Pod) bool {
@@ -92,14 +82,18 @@ func injectRequired(ignored []string, pod *corev1.Pod) bool {
 	return required
 }
 
-func ensureConfigMap(pod corev1.Pod, wk *WebHook, name string) (*corev1.ConfigMap, error) {
+func ensureConfigMap(pod corev1.Pod, wk *WebHook, name string, sidecarData *SidecarData) (*corev1.ConfigMap, error) {
 	client := Client()
 	configMaps := client.CoreV1().ConfigMaps(pod.Namespace)
 	_, err := configMaps.Get(name, metav1.GetOptions{})
 	if err != nil {
 		data := make(map[string]string)
-		data[name] = wk.SidecarConfig.VaultAgentConfig
+		tmpl, err := executeTemplate(wk.SidecarConfig.VaultAgentConfig, sidecarData)
+		if err != nil {
+			return nil, err
+		}
 
+		data[name] = string(tmpl.Bytes())
 		annotations := make(map[string]string)
 		annotations["vault-agent.vaultproject.io"] = "generated"
 
@@ -115,6 +109,36 @@ func ensureConfigMap(pod corev1.Pod, wk *WebHook, name string) (*corev1.ConfigMa
 	}
 	return nil, nil
 
+}
+
+func executeTemplate(source string, data interface{}) (*bytes.Buffer, error) {
+	var tmpl bytes.Buffer
+
+	funcMap := template.FuncMap{
+		"valueOrDefault": valueOrDefault,
+		"toJSON":         toJSON,
+	}
+
+	temp := template.New("inject")
+	t := template.Must(temp.Funcs(funcMap).Parse(source))
+
+	if err := t.Execute(&tmpl, &data); err != nil {
+		log.Errorf("Failed to execute template %v %s", err, source)
+		return nil, err
+	}
+
+	return &tmpl, nil
+}
+
+func unmarshalTemplate(tmpl *bytes.Buffer, target interface{}) (error) {
+	log.Debugf("Template executed, %s", string(tmpl.Bytes()))
+
+	if err := yaml.Unmarshal(tmpl.Bytes(), &target); err != nil {
+		log.Errorf("Failed to unmarshal template %v %s", err, string(tmpl.Bytes()))
+		return err
+	}
+
+	return nil
 }
 
 func valueOrDefault(value string, defaultValue string) string {

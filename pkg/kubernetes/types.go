@@ -25,6 +25,7 @@ type SidecarData struct {
 	TokenVolume string
 	VaultSecret string
 	PropertiesExt string
+	VaultRole string
 }
 
 type SidecarInject struct {
