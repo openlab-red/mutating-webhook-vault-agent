@@ -35,7 +35,7 @@ func injectData(data *SidecarData, config *SidecarConfig) (*SidecarInject, error
 	//
 
 	log.Debugln("SidecarInject: ", sic)
-	return sic, nil
+	return &sic, nil
 }
 
 func injectRequired(ignored []string, pod *corev1.Pod) bool {
