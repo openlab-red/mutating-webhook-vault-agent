@@ -5,7 +5,7 @@
 ```
     oc project hashicorp-vault
 
-    oc create -f openshift/webhook-build.yaml
+    oc apply -f openshift/webhook-build.yaml
 ```
 
 ## Deploy Vault Agent WebHook
@@ -13,7 +13,7 @@
 1. Create the sidecar vault agent configuration
 
     ```
-    oc create -f openshift/sidecar-configmap.yaml
+    oc apply -f openshift/sidecar-configmap.yaml
     ```
 
 2. Process Mutating WebHook Template.
@@ -37,7 +37,7 @@
    2.2 Process the webhook-template
 
     ```
-    oc process -f openshift/webhook-template.yaml -p CA_BUNDLE=${CA_BUNDLE} | oc create -f -
+    oc process -f openshift/webhook-template.yaml -p CA_BUNDLE=${CA_BUNDLE} | oc apply -f -
     ```
 
     |     PARAMETER   |  DEFAULT           |  DESCRIPTION                                                              |
@@ -67,6 +67,7 @@
                                              "sidecar.agent.vaultproject.io/inject": "true",
                                              "sidecar.agent.vaultproject.io/secret-key": "secret/example"
                                              "sidecar.agent.vaultproject.io/properties-ext": "yaml"
+                                             "sidecar.agent.vaultproject.io/vault-role": "example"
                                            }
                                          }
                                        }
