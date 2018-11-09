@@ -40,7 +40,7 @@ data:
           privileged: false
           runAsNonRoot: true
           RunAsUser: {{ .Container.SecurityContext.RunAsUser }}
-      - image: docker-registry.default.svc:5000/openshift/vault-secret-fetcher:latest
+      - image: openlabred/vault-secret-fetcher:v1.0.0
         name: vault-secret-fetcher
         args:
           - start
