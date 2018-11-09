@@ -9,6 +9,9 @@ import (
 	"io/ioutil"
 	"crypto/sha256"
 	"github.com/ghodss/yaml"
+	"regexp"
+	"errors"
+	"fmt"
 )
 
 func Load(file string, c interface{}) {
@@ -41,6 +44,15 @@ func GetAnnotationValue(pod corev1.Pod, name *registeredAnnotation, defaultValue
 	metadata := pod.ObjectMeta
 	annotations := metadata.GetAnnotations()
 	return name.getValueOrDefault(annotations, defaultValue)
+}
+
+func GetDeploymentName(name string) (string, error) {
+	re := regexp.MustCompile("-[0-9]+")
+	index := re.FindIndex([]byte(name))
+	if len(index) > 0 {
+		return name[:index[0]], nil
+	}
+	return "", errors.New(fmt.Sprintf("Wrong string format %s, expected version number", name))
 }
 
 func ToAdmissionResponse(err error) *v1beta1.AdmissionResponse {
