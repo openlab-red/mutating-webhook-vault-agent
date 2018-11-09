@@ -89,16 +89,17 @@ func injectRequired(ignored []string, pod *corev1.Pod) bool {
 func ensureConfigMap(pod corev1.Pod, wk *WebHook, sidecarData *SidecarData) (*corev1.ConfigMap, error) {
 	client := Client()
 	configMaps := client.CoreV1().ConfigMaps(pod.Namespace)
-	name := VaultAgentConfig + "-" + sidecarData.Name
-	_, err := configMaps.Get(name, metav1.GetOptions{})
-	if err != nil {
-		data := make(map[string]string)
-		tmpl, err := executeTemplate(wk.SidecarConfig.VaultAgentConfig, sidecarData)
-		if err != nil {
-			return nil, err
-		}
 
-		data[VaultAgentConfig] = string(tmpl.Bytes())
+	name := VaultAgentConfig + "-" + sidecarData.Name
+	data := make(map[string]string)
+	tmpl, err := executeTemplate(wk.SidecarConfig.VaultAgentConfig, sidecarData)
+	if err != nil {
+		return nil, err
+	}
+	data[VaultAgentConfig] = string(tmpl.Bytes())
+
+	currentConfigMap, err := configMaps.Get(name, metav1.GetOptions{})
+	if err != nil {
 		annotations := make(map[string]string)
 		annotations["vault-agent.vaultproject.io"] = "generated"
 
@@ -110,8 +111,10 @@ func ensureConfigMap(pod corev1.Pod, wk *WebHook, sidecarData *SidecarData) (*co
 			},
 			Data: data,
 		}
-
 		return configMaps.Create(&configMap)
+	} else {
+		currentConfigMap.Data = data
+		return configMaps.Update(currentConfigMap)
 	}
 	return nil, nil
 

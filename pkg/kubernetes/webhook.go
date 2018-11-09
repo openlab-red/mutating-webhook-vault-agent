@@ -66,6 +66,7 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 	req := ar.Request
 	pod := corev1.Pod{}
 	var err error
+	var name string
 
 	if err = Pod(req.Object.Raw, &pod); err != nil {
 		return ToAdmissionResponse(err)
@@ -89,10 +90,14 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 		}
 	}
 
-
 	//sidecar data
+	name, err = GetDeploymentName(pod.OwnerReferences[0].Name)
+	if err != nil {
+		return ToAdmissionResponse(err)
+	}
+
 	data := SidecarData{
-		Name:		   pod.OwnerReferences[0].Name,
+		Name:          name,
 		Container:     pod.Spec.Containers[0],
 		TokenVolume:   FindTokenVolumeName(pod.Spec.Volumes),
 		VaultSecret:   GetAnnotationValue(pod, annotationSecret, ""),
