@@ -75,7 +75,7 @@
                                    }'
     ```
 3. The vault agent webhook will:
-    * Create the vault agent configmap, if does not exist yet
+    * Create or Update the vault agent configmap
     * Inject Vault agent sidecar container
     * Inject Vault secret fetcher sidecar container
     * Mount Vault volume to the app container
