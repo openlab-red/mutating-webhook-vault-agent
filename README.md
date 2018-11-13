@@ -82,7 +82,7 @@
 
 # References
 
-* https://docs.openshift.com/container-platform/3.9/architecture/additional_concepts/dynamic_admission_controllers.html
-* https://v1-9.docs.kubernetes.io/docs/admin/extensible-admission-controllers/
+* https://docs.openshift.com/container-platform/3.10/architecture/additional_concepts/dynamic_admission_controllers.html
+* https://v1-10.docs.kubernetes.io/docs/admin/extensible-admission-controllers/
 * https://github.com/morvencao/kube-mutating-webhook-tutorial/
-* https://github.com/kubernetes/kubernetes/tree/release-1.9/test/images/webhook
+* https://github.com/kubernetes/kubernetes/tree/release-1.10/test/images/webhook
