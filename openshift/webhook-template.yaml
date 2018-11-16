@@ -7,8 +7,8 @@ objects:
   metadata:
     name: vault-agent-webhook-psp
   spec:
-    privileged: true
-    allowPrivilegeEscalation: true
+    privileged: false
+    allowPrivilegeEscalation: false
     allowedCapabilities:
     - '*'
     volumes:
