@@ -65,8 +65,8 @@
                                          "metadata": {
                                            "annotations": {
                                              "sidecar.agent.vaultproject.io/inject": "true",
-                                             "sidecar.agent.vaultproject.io/secret-key": "secret/example"
-                                             "sidecar.agent.vaultproject.io/properties-ext": "yaml"
+                                             "sidecar.agent.vaultproject.io/secret-key": "secret/example",
+                                             "sidecar.agent.vaultproject.io/properties-ext": "yaml",
                                              "sidecar.agent.vaultproject.io/vault-role": "example"
                                            }
                                          }
