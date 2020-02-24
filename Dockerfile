@@ -1,10 +1,11 @@
-FROM go-dep:latest
+FROM docker.io/golang:1.13
 LABEL authors="Mattia Mascia <mmascia@redhat.com>"
+
+WORKDIR $GOPATH/src/github.com/openlab-red/mutating-webhook-vault-agent
 
 COPY . ./
 
-WORKDIR $GOPATH/src/github.com/openlab-red/mutating-webhook-vault-agent
-ENV HOME=/home/mutating-webhook-vault-agent
+ENV HOME=/opt/webhook
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix nocgo -o $HOME/app .
 
