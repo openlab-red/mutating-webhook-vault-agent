@@ -27,7 +27,7 @@ spec:
   strategy:
     dockerStrategy:
       from:
-        kind: ImageStreamTag
+        kind: DockerImage
         name: docker.io/golang:1.13
     type: Docker
   successfulBuildsHistoryLimit: 5

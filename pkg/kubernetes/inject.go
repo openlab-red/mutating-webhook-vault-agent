@@ -1,14 +1,15 @@
 package kubernetes
 
 import (
-	"strings"
 	"bytes"
-	"github.com/sirupsen/logrus"
+	"encoding/json"
+	"strings"
 	"text/template"
+
 	"github.com/ghodss/yaml"
+	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"encoding/json"
 )
 
 const (
@@ -30,12 +31,10 @@ func injectData(data *SidecarData, config *SidecarConfig) (*SidecarInject, error
 	}
 
 	// TODO: seems not working the inject to volumeMounts
-
 	var volumeMounts []corev1.VolumeMount
 	volumeMount := FindVolumeMount(sic.Containers[0].VolumeMounts, "vault-agent-volume")
 	volumeMounts = append(volumeMounts, volumeMount)
 	sic.VolumeMount = volumeMounts
-
 	//
 
 	log.Debugln("SidecarInject: ", sic)
@@ -86,7 +85,7 @@ func injectRequired(ignored []string, pod *corev1.Pod) bool {
 	return required
 }
 
-func ensureConfigMap(pod corev1.Pod, wk *WebHook, sidecarData *SidecarData) (*corev1.ConfigMap, error) {
+func agentConfigMap(pod corev1.Pod, wk *WebHook, sidecarData *SidecarData) (*corev1.ConfigMap, error) {
 	client := Client()
 	configMaps := client.CoreV1().ConfigMaps(pod.Namespace)
 
@@ -96,7 +95,13 @@ func ensureConfigMap(pod corev1.Pod, wk *WebHook, sidecarData *SidecarData) (*co
 	if err != nil {
 		return nil, err
 	}
-	data[VaultAgentConfig] = string(tmpl.Bytes())
+	data["agent.config"] = string(tmpl.Bytes())
+
+	tmpl, err = executeTemplate(wk.SidecarConfig.VaultAgentTemplate, sidecarData)
+	if err != nil {
+		return nil, err
+	}
+	data["template.ctmpl"] = string(tmpl.Bytes())
 
 	currentConfigMap, err := configMaps.Get(name, metav1.GetOptions{})
 	if err != nil {
@@ -116,8 +121,27 @@ func ensureConfigMap(pod corev1.Pod, wk *WebHook, sidecarData *SidecarData) (*co
 		currentConfigMap.Data = data
 		return configMaps.Update(currentConfigMap)
 	}
-	return nil, nil
+}
 
+func caBundleConfigMap(pod corev1.Pod, wk *WebHook, sidecarData *SidecarData) (*corev1.ConfigMap, error) {
+	client := Client()
+	configMaps := client.CoreV1().ConfigMaps(pod.Namespace)
+
+	currentConfigMap, err := configMaps.Get("vault-agent-cabundle", metav1.GetOptions{})
+	if err != nil {
+		annotations := make(map[string]string)
+		annotations["service.beta.openshift.io/inject-cabundle"] = "true"
+
+		configMap := corev1.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "vault-agent-cabundle",
+				Namespace:   pod.Namespace,
+				Annotations: annotations,
+			},
+		}
+		return configMaps.Create(&configMap)
+	}
+	return currentConfigMap, err
 }
 
 func executeTemplate(source string, data interface{}) (*bytes.Buffer, error) {
@@ -139,7 +163,7 @@ func executeTemplate(source string, data interface{}) (*bytes.Buffer, error) {
 	return &tmpl, nil
 }
 
-func unmarshalTemplate(tmpl *bytes.Buffer, target interface{}) (error) {
+func unmarshalTemplate(tmpl *bytes.Buffer, target interface{}) error {
 	log.Debugf("Template executed, %s", string(tmpl.Bytes()))
 
 	if err := yaml.Unmarshal(tmpl.Bytes(), &target); err != nil {

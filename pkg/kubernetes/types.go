@@ -17,7 +17,8 @@ type WebHook struct {
 
 type SidecarConfig struct {
 	Template         string `json:"template"`
-	VaultAgentConfig string `json:"vault-agent-config"`
+	VaultAgentConfig string `json:"agent.config"`
+	VaultAgentTemplate string `json:"agent.config"`
 }
 
 type SidecarData struct {
@@ -25,7 +26,7 @@ type SidecarData struct {
 	Container     corev1.Container
 	TokenVolume   string
 	VaultSecret   string
-	PropertiesExt string
+	VaultFileName string
 	VaultRole     string
 }
 

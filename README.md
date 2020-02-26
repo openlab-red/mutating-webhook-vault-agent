@@ -3,7 +3,7 @@
 ## Build Vault Agent Webhook container
 
 ```
-    oc project hashicorp-vault
+    oc project hashicorp
 
     oc apply -f openshift/webhook-build.yaml
 ```
@@ -43,7 +43,7 @@
     |     PARAMETER   |  DEFAULT           |  DESCRIPTION                                                              |
     |-----------------|--------------------|---------------------------------------------------------------------------|
     | CA_BUNDLE       |                    |    CA used by kubernetes to trust the webhook                             |
-    | VAULT_NAMESPACE |    hashicorp-vault |    Hashicorp Vault Namespac                                               |
+    | VAULT_NAMESPACE |    hashicorp       |    Hashicorp Vault Namespac                                               |
     | GIN_MODE        |    release         |    Http server startup mode [gin-gonic](https://github.com/gin-gonic/gin) |
     | LOG_LEVEL       |    INFO            |    Log level from [logrus](https://github.com/sirupsen/logrus)            |
 
@@ -65,9 +65,9 @@
                                          "metadata": {
                                            "annotations": {
                                              "sidecar.agent.vaultproject.io/inject": "true",
-                                             "sidecar.agent.vaultproject.io/secret-key": "secret/example",
-                                             "sidecar.agent.vaultproject.io/properties-ext": "yaml",
-                                             "sidecar.agent.vaultproject.io/vault-role": "example"
+                                             "sidecar.agent.vaultproject.io/secret": "secret/example",
+                                             "sidecar.agent.vaultproject.io/filename": "yaml",
+                                             "sidecar.agent.vaultproject.io/role": "example"
                                            }
                                          }
                                        }

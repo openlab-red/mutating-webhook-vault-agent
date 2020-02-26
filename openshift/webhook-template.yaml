@@ -76,20 +76,23 @@ objects:
     annotations:
       service.alpha.openshift.io/serving-cert-secret-name: vault-agent-webhook-cert
     labels:
-      app: vault-agent-webhook
+      app.kubernetes.io/instance: vault-agent-webhook
+      app.kubernetes.io/name: vault-agent-webhook
   spec:
     ports:
     - name: vault-agent-webhook
       port: 443
       targetPort: 8080
     selector:
-      app: vault-agent-webhook
+      app.kubernetes.io/instance: vault-agent-webhook
+      app.kubernetes.io/name: vault-agent-webhook
 
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
     labels:
-      app: vault-agent-webhook
+      app.kubernetes.io/instance: vault-agent-webhook
+      app.kubernetes.io/name: vault-agent-webhook
     name: vault-agent-webhook
   spec:
     triggers:
@@ -106,7 +109,8 @@ objects:
     template:
       metadata:
         labels:
-          app: vault-agent-webhook
+          app.kubernetes.io/instance: vault-agent-webhook
+          app.kubernetes.io/name: vault-agent-webhook
       spec:
         serviceAccountName: vault-agent-webhook
         containers:
@@ -175,7 +179,7 @@ parameters:
 - name: VAULT_NAMESPACE
   description: Hashicorp Vault Namespace
   required: true
-  value: "hashicorp-vault"
+  value: "hashicorp"
 - name: GIN_MODE
   description: Start up mode of the http server
   required: true
