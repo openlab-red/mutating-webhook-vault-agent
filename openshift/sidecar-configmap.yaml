@@ -102,3 +102,16 @@ data:
             source      = "/vault/config/template.ctmpl"
             destination = "/var/run/secrets/vaultproject.io/{{ .VaultFileName }}""
         }
+
+---
+
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: vault-agent-webhook-cabundle
+  labels:
+    app.kubernetes.io/instance: vault-agent-webhook
+    app.kubernetes.io/name: vault-agent-webhook
+  annotations:
+    service.beta.openshift.io/inject-cabundle: "true"
+data: {}

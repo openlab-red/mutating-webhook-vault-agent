@@ -27,11 +27,11 @@
     * vault-agent-webhook DeploymentConfig
     * vault-agent-webhook MutatingWebhookConfiguration
     
-   2.1 Get service-ca.crt from the vault pod
+   2.1 Get service-ca.crt from the configmap ca-bundle.
 
     ```
-    pod=$(oc get pods -lapp=vault --no-headers -o custom-columns=NAME:.metadata.name)
-    export CA_BUNDLE=$(oc exec $pod -- cat /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt | base64 | tr -d '\n')
+    oc extract configmap/vault-agent-webhook-cabundle --confirm
+    export CA_BUNDLE=$(cat service-ca.crt | base64 | tr -d '\n')
     ```
 
    2.2 Process the webhook-template
@@ -52,7 +52,7 @@
 1. Label the target project where you want the webhook to inject the vault agent sidecar container.
 
     ```
-    oc label namespace app vault-agent-webhook=enabled
+    oc label namespace app sidecar.agent.vaultproject.io/webhook=enabled
     ```
 
 2. Add the *sidecar.agent.vaultproject.io/inject* annotation with value true to the pod template spec to enable injection.
