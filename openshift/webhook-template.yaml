@@ -149,7 +149,7 @@ objects:
           configMap:
             name: sidecar-agent
 
-- apiVersion: admissionregistration.k8s.io/v1beta1
+- apiVersion: admissionregistration.k8s.io/v1
   kind: MutatingWebhookConfiguration
   metadata:
     name: vault-agent-webhook
@@ -158,6 +158,9 @@ objects:
       app.kubernetes.io/name: vault-agent-webhook
   webhooks:
     - name: vault-agent.vaultproject.io
+      sideEffects: NoneOnDryRun
+      admissionReviewVersions: ["v1", "v1beta1"]
+      timeoutSeconds: 5
       clientConfig:
         service:
           name: vault-agent-webhook
