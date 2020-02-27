@@ -66,7 +66,7 @@
                                            "annotations": {
                                              "sidecar.agent.vaultproject.io/inject": "true",
                                              "sidecar.agent.vaultproject.io/secret": "secret/example",
-                                             "sidecar.agent.vaultproject.io/filename": "yaml",
+                                             "sidecar.agent.vaultproject.io/filename": "application.yaml",
                                              "sidecar.agent.vaultproject.io/role": "example"
                                            }
                                          }
