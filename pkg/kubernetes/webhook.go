@@ -56,7 +56,7 @@ func (wk *WebHook) Mutate(context *gin.Context) {
 		}
 		context.JSON(http.StatusOK, admissionReview)
 	} else {
-		log.WithField(logrus.Fields{
+		log.WithFields(logrus.Fields{
 			"Context": context,
 			"Error":   err,
 		}).Errorln("Mutate Request")
