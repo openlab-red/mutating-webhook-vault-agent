@@ -56,7 +56,7 @@ func GetDeploymentName(name string) (string, error) {
 	return "", errors.New(fmt.Sprintf("Wrong string format %s, expected version number", name))
 }
 
-func ToAdmissionResponse(err error) *v1.AdmissionResponse {
+func ToAdmissionResponseError(err error) *v1.AdmissionResponse {
 	log.Errorln(err)
 	return &v1.AdmissionResponse{
 		Allowed: false,

@@ -43,27 +43,21 @@ var (
 
 func (wk *WebHook) Mutate(context *gin.Context) {
 
-	ar := v1.AdmissionReview{}
+	var admissionRequest v1.AdmissionReview
+	var admissionResponse v1.AdmissionReview
 
-	if err := context.ShouldBindJSON(&ar); err == nil {
-		admissionResponse := wk.admit(ar)
-		admissionReview := v1.AdmissionReview{}
-		if admissionResponse != nil {
-			admissionReview.Response = admissionResponse
-			if ar.Request != nil {
-				admissionReview.Response.UID = ar.Request.UID
-			}
-		}
+	if err := context.ShouldBindJSON(&admissionRequest); err == nil {
+		admissionResponse.Response = wk.admit(admissionRequest)
 		log.WithFields(logrus.Fields{
-			"AdmissionReview": admissionReview,
-		}).Infoln("AdmissionReview Response")
-		context.JSON(http.StatusOK, admissionReview)
+			"AdmissionReview": admissionResponse,
+		}).Debugln("AdmissionReview Response")
+		context.JSON(http.StatusOK, admissionResponse)
 	} else {
 		log.WithFields(logrus.Fields{
 			"Context": context,
 			"Error":   err,
 		}).Errorln("Mutate Request")
-		context.AbortWithStatusJSON(http.StatusBadRequest, ToAdmissionResponse(err))
+		context.AbortWithStatusJSON(http.StatusBadRequest, ToAdmissionResponseError(err))
 	}
 
 }
@@ -75,7 +69,7 @@ func (wk *WebHook) admit(ar v1.AdmissionReview) *v1.AdmissionResponse {
 	var name string
 
 	if err = Pod(req.Object.Raw, &pod); err != nil {
-		return ToAdmissionResponse(err)
+		return ToAdmissionResponseError(err)
 	}
 
 	pod.Name = PotentialPodName(&pod.ObjectMeta)
@@ -101,13 +95,14 @@ func (wk *WebHook) admit(ar v1.AdmissionReview) *v1.AdmissionResponse {
 		}).Infoln("Admission Not Required")
 		return &v1.AdmissionResponse{
 			Allowed: true,
+			UID:     req.UID,
 		}
 	}
 
 	//sidecar data
 	name, err = GetDeploymentName(pod.OwnerReferences[0].Name)
 	if err != nil {
-		return ToAdmissionResponse(err)
+		return ToAdmissionResponseError(err)
 	}
 
 	data := SidecarData{
@@ -122,25 +117,25 @@ func (wk *WebHook) admit(ar v1.AdmissionReview) *v1.AdmissionResponse {
 	// agent configMap
 	_, err = agentConfigMap(pod, wk, &data)
 	if err != nil {
-		return ToAdmissionResponse(err)
+		return ToAdmissionResponseError(err)
 	}
 
 	// ca-bundle
 	_, err = caBundleConfigMap(pod, wk, &data)
 	if err != nil {
-		return ToAdmissionResponse(err)
+		return ToAdmissionResponseError(err)
 	}
 
 	wk.VaultConfig, err = injectData(&data, wk.SidecarConfig)
 	if err != nil {
-		return ToAdmissionResponse(err)
+		return ToAdmissionResponseError(err)
 	}
 	annotations := map[string]string{annotationStatus.name: "injected"}
 
 	//patch
 	patches, err := createPatch(&pod, wk.VaultConfig, annotations)
 	if err != nil {
-		return ToAdmissionResponse(err)
+		return ToAdmissionResponseError(err)
 	}
 
 	log.Debugf("AdmissionResponse: patch=%v\n", string(patches))
