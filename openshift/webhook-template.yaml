@@ -158,7 +158,7 @@ objects:
       app.kubernetes.io/name: vault-agent-webhook
   webhooks:
     - name: vault-agent.vaultproject.io
-      sideEffects: NoneOnDryRun
+      sideEffects: None
       admissionReviewVersions: ["v1", "v1beta1"]
       timeoutSeconds: 5
       clientConfig:
@@ -166,6 +166,7 @@ objects:
           name: vault-agent-webhook
           namespace: ${VAULT_NAMESPACE}
           path: "/mutate"
+          port: 443
         caBundle: ${CA_BUNDLE}
       failurePolicy: Fail
       rules:
@@ -176,6 +177,26 @@ objects:
       namespaceSelector:
         matchLabels:
           sidecar.agent.vaultproject.io/webhook: enabled
+
+- apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: vault-agent-webhook
+    labels:
+      app.kubernetes.io/instance: vault-agent-webhook
+      app.kubernetes.io/name: vault-agent-webhook
+  spec:
+    podSelector:
+      matchLabels:
+        app.kubernetes.io/instance: vault-agent-webhook
+        app.kubernetes.io/name: vault-agent-webhook
+    ingress:
+      - from:
+          - namespaceSelector: {}
+        ports:
+        - port: 443
+          protocol: TCP
+
 parameters:
 - name: CA_BUNDLE
   description: Certificate Authority to validate the services

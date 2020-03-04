@@ -6,6 +6,8 @@
     oc project hashicorp
 
     oc apply -f openshift/webhook-build.yaml
+
+    oc start-build vault-agent-webhook --follow
 ```
 
 ## Deploy Vault Agent WebHook
