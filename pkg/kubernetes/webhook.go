@@ -51,7 +51,7 @@ func (wk *WebHook) Mutate(context *gin.Context) {
 		log.WithFields(logrus.Fields{
 			"AdmissionReview": admissionResponse,
 		}).Debugln("AdmissionReview Response")
-		context.JSON(http.StatusOK, admissionResponse)
+		context.JSON(http.StatusOK, &admissionResponse)
 	} else {
 		log.WithFields(logrus.Fields{
 			"Context": context,
