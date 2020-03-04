@@ -1,17 +1,18 @@
 package kubernetes
 
 import (
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/api/admission/v1beta1"
-	"encoding/json"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strings"
-	"io/ioutil"
 	"crypto/sha256"
-	"github.com/ghodss/yaml"
-	"regexp"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"regexp"
+	"strings"
+
+	"github.com/ghodss/yaml"
+	v1 "k8s.io/api/admission/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func Load(file string, c interface{}) {
@@ -29,7 +30,7 @@ func Load(file string, c interface{}) {
 	log.Infof("SidecarConfig: %v", c)
 }
 
-func Pod(raw []byte, pod *corev1.Pod) (error) {
+func Pod(raw []byte, pod *corev1.Pod) error {
 
 	log.Debugf("Object: %v", string(raw))
 	if err := json.Unmarshal(raw, pod); err != nil {
@@ -55,9 +56,10 @@ func GetDeploymentName(name string) (string, error) {
 	return "", errors.New(fmt.Sprintf("Wrong string format %s, expected version number", name))
 }
 
-func ToAdmissionResponse(err error) *v1beta1.AdmissionResponse {
+func ToAdmissionResponse(err error) *v1.AdmissionResponse {
 	log.Errorln(err)
-	return &v1beta1.AdmissionResponse{
+	return &v1.AdmissionResponse{
+		Allowed: false,
 		Result: &metav1.Status{
 			Message: err.Error(),
 		},
@@ -75,14 +77,14 @@ func PotentialPodName(metadata *metav1.ObjectMeta) string {
 	return ""
 }
 
-func PotentialNamespace(req *v1beta1.AdmissionRequest, pod *corev1.Pod) (string) {
+func PotentialNamespace(req *v1.AdmissionRequest, pod *corev1.Pod) string {
 	if pod.ObjectMeta.Namespace == "" {
 		return req.Namespace
 	}
 	return pod.ObjectMeta.Namespace
 }
 
-func FindTokenVolumeName(volumes []corev1.Volume) (string) {
+func FindTokenVolumeName(volumes []corev1.Volume) string {
 	for _, vol := range volumes {
 		if strings.Contains(vol.Name, "token") && vol.VolumeSource.Secret != nil {
 			return vol.Name
@@ -91,7 +93,7 @@ func FindTokenVolumeName(volumes []corev1.Volume) (string) {
 	return ""
 }
 
-func FindVolumeMount(volumes []corev1.VolumeMount, name string) (corev1.VolumeMount) {
+func FindVolumeMount(volumes []corev1.VolumeMount, name string) corev1.VolumeMount {
 	for _, vol := range volumes {
 		if strings.Contains(vol.Name, name) {
 			log.Debugln("VolumeMount found", vol.Name)

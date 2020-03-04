@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"k8s.io/api/admission/v1beta1"
+	v1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -43,11 +43,11 @@ var (
 
 func (wk *WebHook) Mutate(context *gin.Context) {
 
-	ar := v1beta1.AdmissionReview{}
+	ar := v1.AdmissionReview{}
 
 	if err := context.ShouldBindJSON(&ar); err == nil {
 		admissionResponse := wk.admit(ar)
-		admissionReview := v1beta1.AdmissionReview{}
+		admissionReview := v1.AdmissionReview{}
 		if admissionResponse != nil {
 			admissionReview.Response = admissionResponse
 			if ar.Request != nil {
@@ -65,7 +65,7 @@ func (wk *WebHook) Mutate(context *gin.Context) {
 
 }
 
-func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
+func (wk *WebHook) admit(ar v1.AdmissionReview) *v1.AdmissionResponse {
 	req := ar.Request
 	pod := corev1.Pod{}
 	var err error
@@ -88,7 +88,7 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 	}).Infoln("AdmissionReview for")
 
 	if !injectRequired(ignoredNamespaces, &pod) {
-		return &v1beta1.AdmissionResponse{
+		return &v1.AdmissionResponse{
 			Allowed: true,
 		}
 	}
@@ -143,11 +143,11 @@ func (wk *WebHook) admit(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse 
 		"UserInfo":       req.UserInfo,
 	}).Infoln("AdmissionResponse Allowed for")
 
-	return &v1beta1.AdmissionResponse{
+	return &v1.AdmissionResponse{
 		Allowed: true,
 		Patch:   patches,
-		PatchType: func() *v1beta1.PatchType {
-			pt := v1beta1.PatchTypeJSONPatch
+		PatchType: func() *v1.PatchType {
+			pt := v1.PatchTypeJSONPatch
 			return &pt
 		}(),
 	}

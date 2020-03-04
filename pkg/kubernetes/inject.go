@@ -102,8 +102,8 @@ func agentConfigMap(pod corev1.Pod, wk *WebHook, sidecarData *SidecarData) (*cor
 		return nil, err
 	}
 	data["template.ctmpl"] = string(tmpl.Bytes())
-
 	currentConfigMap, err := configMaps.Get(name, metav1.GetOptions{})
+
 	if err != nil {
 		annotations := make(map[string]string)
 		annotations["vault-agent.vaultproject.io"] = "generated"
@@ -117,10 +117,9 @@ func agentConfigMap(pod corev1.Pod, wk *WebHook, sidecarData *SidecarData) (*cor
 			Data: data,
 		}
 		return configMaps.Create(&configMap)
-	} else {
-		currentConfigMap.Data = data
-		return configMaps.Update(currentConfigMap)
 	}
+	currentConfigMap.Data = data
+	return configMaps.Update(currentConfigMap)
 }
 
 func caBundleConfigMap(pod corev1.Pod, wk *WebHook, sidecarData *SidecarData) (*corev1.ConfigMap, error) {
