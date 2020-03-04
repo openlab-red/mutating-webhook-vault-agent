@@ -54,6 +54,9 @@ func (wk *WebHook) Mutate(context *gin.Context) {
 				admissionReview.Response.UID = ar.Request.UID
 			}
 		}
+		log.WithFields(logrus.Fields{
+			"AdmissionReview": admissionReview,
+		}).Infoln("AdmissionReview Response")
 		context.JSON(http.StatusOK, admissionReview)
 	} else {
 		log.WithFields(logrus.Fields{
@@ -88,6 +91,14 @@ func (wk *WebHook) admit(ar v1.AdmissionReview) *v1.AdmissionResponse {
 	}).Infoln("AdmissionReview for")
 
 	if !injectRequired(ignoredNamespaces, &pod) {
+		log.WithFields(logrus.Fields{
+			"Kind":           req.Kind,
+			"Namespace":      req.Namespace,
+			"Name":           pod.Name,
+			"UID":            req.UID,
+			"PatchOperation": req.Operation,
+			"UserInfo":       req.UserInfo,
+		}).Infoln("Admission Not Required")
 		return &v1.AdmissionResponse{
 			Allowed: true,
 		}
