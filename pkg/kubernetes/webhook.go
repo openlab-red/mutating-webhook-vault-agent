@@ -41,22 +41,26 @@ var (
 	}
 )
 
+// Mutate AdmissionReview Request
 func (wk *WebHook) Mutate(context *gin.Context) {
 
 	var admissionRequest v1.AdmissionReview
 	var admissionResponse v1.AdmissionReview
 
 	if err := context.ShouldBindJSON(&admissionRequest); err == nil {
+		log.WithFields(logrus.Fields{
+			"AdmissionRequest": admissionRequest,
+		}).Debugln("AdmissionReview: ")
 		admissionResponse.Response = wk.admit(admissionRequest)
 		log.WithFields(logrus.Fields{
-			"AdmissionReview": admissionResponse,
-		}).Debugln("AdmissionReview Response")
+			"AdmissionResponse": admissionResponse,
+		}).Debugln("AdmissionReview: ")
 		context.JSON(http.StatusOK, &admissionResponse)
 	} else {
 		log.WithFields(logrus.Fields{
 			"Context": context,
 			"Error":   err,
-		}).Errorln("Mutate Request")
+		}).Errorln("Mutate Request: ")
 		context.AbortWithStatusJSON(http.StatusBadRequest, ToAdmissionResponseError(err))
 	}
 
