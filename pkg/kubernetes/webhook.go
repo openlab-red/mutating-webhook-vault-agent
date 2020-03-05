@@ -154,6 +154,7 @@ func (wk *WebHook) admit(ar v1.AdmissionReview) *v1.AdmissionResponse {
 
 	return &v1.AdmissionResponse{
 		Allowed: true,
+		UID:     req.UID,
 		Patch:   patches,
 		PatchType: func() *v1.PatchType {
 			pt := v1.PatchTypeJSONPatch
