@@ -68,9 +68,11 @@ data:
           name: vault-agent-cabundle
         name: vault-cabundle
     template.ctmpl: |
-      {{"{{"}} with secret "{{ .VaultSecret }}" {{"}}"}}
-      {{"{{"}} .Data {{"}}"}}
-      {{"{{"}} end {{"}}"}}
+        {{"{{"}} with secret "{{ .VaultSecret }}" {{"}}"}}
+        secret:
+          example:
+            password: {{"{{"}} .Data.password {{"}}"}}
+        {{"{{"}} end {{"}}"}}
     agent.config: |
 
         vault {
