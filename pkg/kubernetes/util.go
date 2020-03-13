@@ -15,6 +15,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// Load a yaml file
 func Load(file string, c interface{}) {
 
 	data, err := ioutil.ReadFile(file)
@@ -30,6 +31,7 @@ func Load(file string, c interface{}) {
 	log.Infof("SidecarConfig: %v", c)
 }
 
+// Pod unmarshalls byte to corev1.Pod
 func Pod(raw []byte, pod *corev1.Pod) error {
 
 	log.Debugf("Object: %v", string(raw))
@@ -41,12 +43,14 @@ func Pod(raw []byte, pod *corev1.Pod) error {
 	return nil
 }
 
+// GetAnnotationValue returns the vaule of annotation from a Pod
 func GetAnnotationValue(pod corev1.Pod, name *registeredAnnotation, defaultValue string) string {
 	metadata := pod.ObjectMeta
 	annotations := metadata.GetAnnotations()
 	return name.getValueOrDefault(annotations, defaultValue)
 }
 
+// GetDeploymentName return the name of a Deployment
 func GetDeploymentName(name string) (string, error) {
 	re := regexp.MustCompile("-[0-9]+")
 	index := re.FindIndex([]byte(name))
@@ -56,6 +60,7 @@ func GetDeploymentName(name string) (string, error) {
 	return "", errors.New(fmt.Sprintf("Wrong string format %s, expected version number", name))
 }
 
+// ToAdmissionResponseError creates a not allowed AdmissionResponse
 func ToAdmissionResponseError(err error) *v1.AdmissionResponse {
 	log.Errorln(err)
 	return &v1.AdmissionResponse{
@@ -66,7 +71,7 @@ func ToAdmissionResponseError(err error) *v1.AdmissionResponse {
 	}
 }
 
-// Deal with potential empty fields, e.g., when the pod is created by a deployment
+// PotentialPodName deal with potential empty fields, e.g., when the pod is created by a deployment
 func PotentialPodName(metadata *metav1.ObjectMeta) string {
 	if metadata.Name != "" {
 		return metadata.Name
@@ -77,6 +82,7 @@ func PotentialPodName(metadata *metav1.ObjectMeta) string {
 	return ""
 }
 
+// PotentialNamespace deal with potential namespace name
 func PotentialNamespace(req *v1.AdmissionRequest, pod *corev1.Pod) string {
 	if pod.ObjectMeta.Namespace == "" {
 		return req.Namespace
@@ -84,6 +90,7 @@ func PotentialNamespace(req *v1.AdmissionRequest, pod *corev1.Pod) string {
 	return pod.ObjectMeta.Namespace
 }
 
+// FindTokenVolumeName retrieves the Secret -token types volume
 func FindTokenVolumeName(volumes []corev1.Volume) string {
 	for _, vol := range volumes {
 		if strings.Contains(vol.Name, "token") && vol.VolumeSource.Secret != nil {
@@ -93,6 +100,7 @@ func FindTokenVolumeName(volumes []corev1.Volume) string {
 	return ""
 }
 
+// FindVolumeMount returns the volume mount entry
 func FindVolumeMount(volumes []corev1.VolumeMount, name string) corev1.VolumeMount {
 	for _, vol := range volumes {
 		if strings.Contains(vol.Name, name) {
@@ -103,6 +111,7 @@ func FindVolumeMount(volumes []corev1.VolumeMount, name string) corev1.VolumeMou
 	return corev1.VolumeMount{}
 }
 
+// getValueOrDefault is a helper method to return a default from annotation
 func (v *registeredAnnotation) getValueOrDefault(annotations map[string]string, defaultValue string) string {
 	if val, ok := annotations[v.name]; ok {
 		return val

@@ -173,7 +173,7 @@ objects:
         - operations: ["CREATE", "UPDATE"]
           apiGroups: [""]
           apiVersions: ["v1"]
-          resources: ["deployments", "jobs", "pods", "statefulsets"]
+          resources: ["pods"]
       namespaceSelector:
         matchLabels:
           sidecar.agent.vaultproject.io/webhook: enabled

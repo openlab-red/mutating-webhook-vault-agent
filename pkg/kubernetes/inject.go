@@ -13,10 +13,11 @@ import (
 )
 
 const (
+	// VaultAgentConfig represents a prefix for the config map
 	VaultAgentConfig = "vault-agent-config"
 )
 
-func injectData(data *SidecarData, config *SidecarConfig) (*SidecarInject, error) {
+func inject(data *SidecarData, config *SidecarConfig) (*SidecarInject, error) {
 
 	sic := SidecarInject{}
 
@@ -41,7 +42,7 @@ func injectData(data *SidecarData, config *SidecarConfig) (*SidecarInject, error
 	return &sic, nil
 }
 
-func injectRequired(ignored []string, pod *corev1.Pod) bool {
+func isRequired(ignored []string, pod *corev1.Pod) bool {
 	var status, inject string
 	required := false
 	metadata := pod.ObjectMeta

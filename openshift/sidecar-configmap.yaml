@@ -9,7 +9,7 @@ data:
       - mountPath: /vault/config
         name: vault-config
       - mountPath: /vault/ca
-        name: vault-cabundle
+        name: vault-agent-webhook-cabundle
       - mountPath: /var/run/secrets/vaultproject.io
         name: {{ .TokenVolume }}
       containers:
@@ -30,7 +30,7 @@ data:
         - mountPath: /vault/config
           name: vault-config
         - mountPath: /vault/ca
-          name: vault-cabundle
+          name: vault-agent-webhook-cabundle
         - mountPath: /var/run/secrets/vaultproject.io
           name: {{ .TokenVolume }}
         securityContext:
@@ -58,14 +58,14 @@ data:
               - -c
               - sleep 5 && kill -SIGTERM $(pidof vault)
       volumes:
-      - name: vault-agent-volume
+      - name: {{ .TokenVolume }}
         emptyDir:
           medium: Memory
       - configMap:
           name: vault-agent-config
         name: vault-config
       - configMap:
-          name: vault-agent-cabundle
+          name: vault-agent-webhook-cabundle
         name: vault-cabundle
     template.ctmpl: |
       "{{" with secret "{{ .VaultSecret }}" "}}"
@@ -100,7 +100,7 @@ data:
 
         template {
             source      = "/vault/config/template.ctmpl"
-            destination = "/var/run/secrets/vaultproject.io/{{ .VaultFileName }}""
+            destination = "/var/run/secrets/vaultproject.io/{{ .VaultFileName }}"
         }
 
 ---

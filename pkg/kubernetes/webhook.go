@@ -87,7 +87,7 @@ func (wk *WebHook) admit(ar v1.AdmissionReview) *v1.AdmissionResponse {
 		"UserInfo":       req.UserInfo,
 	}).Infoln("AdmissionReview for")
 
-	if !injectRequired(ignoredNamespaces, &pod) {
+	if !isRequired(ignoredNamespaces, &pod) {
 		log.WithFields(logrus.Fields{
 			"Kind":           req.Kind,
 			"Namespace":      req.Namespace,
@@ -129,7 +129,7 @@ func (wk *WebHook) admit(ar v1.AdmissionReview) *v1.AdmissionResponse {
 		return ToAdmissionResponseError(err)
 	}
 
-	wk.VaultConfig, err = injectData(&data, wk.SidecarConfig)
+	wk.VaultConfig, err = inject(&data, wk.SidecarConfig)
 	if err != nil {
 		return ToAdmissionResponseError(err)
 	}
