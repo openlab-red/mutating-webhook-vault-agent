@@ -3,7 +3,6 @@ package kubernetes
 import (
 	"crypto/sha256"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"regexp"
@@ -57,7 +56,7 @@ func GetDeploymentName(name string) (string, error) {
 	if len(index) > 0 {
 		return name[:index[0]], nil
 	}
-	return "", errors.New(fmt.Sprintf("Wrong string format %s, expected version number", name))
+	return "", fmt.Errorf("Wrong string format %s, expected version number", name)
 }
 
 // ToAdmissionResponseError creates a not allowed AdmissionResponse
