@@ -93,7 +93,7 @@ func agentConfigMap(prefix string, pod corev1.Pod, wk *WebHook, sidecarData *Sid
 	configMaps := client.CoreV1().ConfigMaps(pod.Namespace)
 
 	data := make(map[string]string)
-	name := prefix + sidecarData.Name
+	name := prefix + "-" + sidecarData.Name
 	sidecarData.VaultInit = init
 
 	tmpl, err := executeTemplate(wk.SidecarConfig.VaultAgentConfig, sidecarData)
