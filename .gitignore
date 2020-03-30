@@ -197,6 +197,7 @@ tags
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+.history
 
 
 # End of https://www.gitignore.io/api/go,vim,emacs,visualstudiocode,intellij,macos

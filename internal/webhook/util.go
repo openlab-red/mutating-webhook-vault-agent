@@ -1,4 +1,4 @@
-package kubernetes
+package webhook
 
 import (
 	"crypto/sha256"

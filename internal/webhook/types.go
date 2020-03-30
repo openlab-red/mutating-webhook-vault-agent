@@ -1,15 +1,8 @@
-package kubernetes
+package webhook
 
 import (
 	corev1 "k8s.io/api/core/v1"
 )
-
-// PatchOperation defines the Kubernetes patch json strategy
-type PatchOperation struct {
-	Op    string      `json:"op"`
-	Path  string      `json:"path"`
-	Value interface{} `json:"value,omitempty"`
-}
 
 // WebHook defines the webhook configuration
 type WebHook struct {

@@ -1,12 +1,11 @@
-package kubernetes
+package kube
 
 import (
-	"encoding/json"
-
 	corev1 "k8s.io/api/core/v1"
 )
 
-func addContainer(target, added []corev1.Container, basePath string) (patch []PatchOperation) {
+// AddContainer prepare patch operation to add Container
+func AddContainer(target, added []corev1.Container, basePath string) (patch []PatchOperation) {
 	first := len(target) == 0
 	var value interface{}
 	for _, add := range added {
@@ -27,7 +26,8 @@ func addContainer(target, added []corev1.Container, basePath string) (patch []Pa
 	return patch
 }
 
-func addVolume(target, added []corev1.Volume, basePath string) (patch []PatchOperation) {
+// AddVolume prepare patch operation to add Volume
+func AddVolume(target, added []corev1.Volume, basePath string) (patch []PatchOperation) {
 	first := len(target) == 0
 	var value interface{}
 	for _, add := range added {
@@ -48,7 +48,8 @@ func addVolume(target, added []corev1.Volume, basePath string) (patch []PatchOpe
 	return patch
 }
 
-func addVolumeMount(target, added []corev1.VolumeMount, basePath string) (patch []PatchOperation) {
+// AddVolumeMount prepare patch operation to add VolumeMount
+func AddVolumeMount(target, added []corev1.VolumeMount, basePath string) (patch []PatchOperation) {
 	first := len(target) == 0
 	var value interface{}
 	for _, add := range added {
@@ -67,12 +68,11 @@ func addVolumeMount(target, added []corev1.VolumeMount, basePath string) (patch 
 		})
 	}
 
-	log.Debugf("VolumeMount Patch: %v", patch)
-
 	return patch
 }
 
-func updateAnnotation(target map[string]string, added map[string]string) (patch []PatchOperation) {
+// UpdateAnnotation prepare patch operation to add/replace annotation map
+func UpdateAnnotation(target map[string]string, added map[string]string) (patch []PatchOperation) {
 	for key, value := range added {
 		if target == nil || target[key] == "" {
 			target = map[string]string{}
@@ -92,18 +92,4 @@ func updateAnnotation(target map[string]string, added map[string]string) (patch 
 		}
 	}
 	return patch
-}
-
-func createPatch(pod *corev1.Pod, sidecarInject *SidecarInject, annotations map[string]string) ([]byte, error) {
-	var patch []PatchOperation
-
-	log.Debugln("VolumeMounts:", sidecarInject.VolumeMount)
-	patch = append(patch, addVolumeMount(pod.Spec.Containers[0].VolumeMounts, sidecarInject.VolumeMount, "/spec/containers/0/volumeMounts")...)
-	patch = append(patch, addContainer(pod.Spec.Containers, sidecarInject.Containers, "/spec/containers")...)
-	patch = append(patch, addContainer(pod.Spec.InitContainers, sidecarInject.InitContainers, "/spec/initContainers")...)
-	patch = append(patch, addVolume(pod.Spec.Volumes, sidecarInject.Volumes, "/spec/volumes")...)
-	patch = append(patch, updateAnnotation(pod.Annotations, annotations)...)
-
-	log.Debugf("Patch: %v", patch)
-	return json.Marshal(patch)
 }

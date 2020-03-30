@@ -1,9 +1,10 @@
-package kubernetes
+package webhook
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	logger "github.com/openlab-red/mutating-webhook-vault-agent/internal/logrus"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -39,6 +40,8 @@ var (
 		metav1.NamespaceSystem,
 		metav1.NamespacePublic,
 	}
+
+	log = logger.Log()
 )
 
 // Mutate AdmissionReview Request
@@ -142,7 +145,7 @@ func (wk *WebHook) admit(ar v1.AdmissionReview) *v1.AdmissionResponse {
 	annotations := map[string]string{annotationStatus.name: "injected"}
 
 	//patch
-	patches, err := createPatch(&pod, wk.VaultConfig, annotations)
+	patches, err := CreatePatch(&pod, wk.VaultConfig, annotations)
 	if err != nil {
 		return ToAdmissionResponseError(err)
 	}

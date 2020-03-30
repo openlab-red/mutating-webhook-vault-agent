@@ -1,4 +1,4 @@
-package kubernetes
+package webhook
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"text/template"
 
 	"github.com/ghodss/yaml"
+	"github.com/openlab-red/mutating-webhook-vault-agent/pkg/kube"
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -89,7 +90,7 @@ func isRequired(ignored []string, pod *corev1.Pod) bool {
 }
 
 func agentConfigMap(prefix string, pod corev1.Pod, wk *WebHook, sidecarData *SidecarData, init bool) (*corev1.ConfigMap, error) {
-	client := Client()
+	client := kube.Client()
 	configMaps := client.CoreV1().ConfigMaps(pod.Namespace)
 
 	data := make(map[string]string)
@@ -129,7 +130,7 @@ func agentConfigMap(prefix string, pod corev1.Pod, wk *WebHook, sidecarData *Sid
 }
 
 func caBundleConfigMap(pod corev1.Pod, wk *WebHook, sidecarData *SidecarData) (*corev1.ConfigMap, error) {
-	client := Client()
+	client := kube.Client()
 	configMaps := client.CoreV1().ConfigMaps(pod.Namespace)
 
 	currentConfigMap, err := configMaps.Get("vault-agent-cabundle", metav1.GetOptions{})
