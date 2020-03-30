@@ -113,12 +113,18 @@ func (wk *WebHook) admit(ar v1.AdmissionReview) *v1.AdmissionResponse {
 		Container:     pod.Spec.Containers[0],
 		TokenVolume:   FindTokenVolumeName(pod.Spec.Volumes),
 		VaultSecret:   GetAnnotationValue(pod, annotationSecret, ""),
-		VaultFileName: GetAnnotationValue(pod, annotationVaultFileName, "application.properties"),
+		VaultFileName: GetAnnotationValue(pod, annotationVaultFileName, "application.yaml"),
 		VaultRole:     GetAnnotationValue(pod, annotationVaultRole, "example"),
 	}
 
+	// agent ConfigMap for initContainers
+	_, err = agentConfigMap(VaultAgentInitConfigPrefix, pod, wk, &data, true)
+	if err != nil {
+		return ToAdmissionResponseError(err)
+	}
+
 	// agent configMap
-	_, err = agentConfigMap(pod, wk, &data)
+	_, err = agentConfigMap(VaultAgentConfigPrefix, pod, wk, &data, false)
 	if err != nil {
 		return ToAdmissionResponseError(err)
 	}

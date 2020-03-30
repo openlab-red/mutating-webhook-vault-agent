@@ -13,8 +13,10 @@ import (
 )
 
 const (
-	// VaultAgentConfig represents a prefix for the config map
-	VaultAgentConfig = "vault-agent-config"
+	// VaultAgentInitConfigPrefix represents a prefix for the config map
+	VaultAgentInitConfigPrefix = "vault-agent-init-config"
+	// VaultAgentConfigPrefix represents a prefix for the config map
+	VaultAgentConfigPrefix = "vault-agent-config"
 )
 
 func inject(data *SidecarData, config *SidecarConfig) (*SidecarInject, error) {
@@ -86,13 +88,16 @@ func isRequired(ignored []string, pod *corev1.Pod) bool {
 	return required
 }
 
-func agentConfigMap(pod corev1.Pod, wk *WebHook, sidecarData *SidecarData) (*corev1.ConfigMap, error) {
+func agentConfigMap(prefix string, pod corev1.Pod, wk *WebHook, sidecarData *SidecarData, init bool) (*corev1.ConfigMap, error) {
 	client := Client()
 	configMaps := client.CoreV1().ConfigMaps(pod.Namespace)
 
-	name := VaultAgentConfig + "-" + sidecarData.Name
 	data := make(map[string]string)
+	name := prefix + sidecarData.Name
+	sidecarData.VaultInit = init
+
 	tmpl, err := executeTemplate(wk.SidecarConfig.VaultAgentConfig, sidecarData)
+
 	if err != nil {
 		return nil, err
 	}

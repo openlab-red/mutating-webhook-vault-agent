@@ -1,8 +1,9 @@
 package kubernetes
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	"encoding/json"
+
+	corev1 "k8s.io/api/core/v1"
 )
 
 func addContainer(target, added []corev1.Container, basePath string) (patch []PatchOperation) {
@@ -99,6 +100,7 @@ func createPatch(pod *corev1.Pod, sidecarInject *SidecarInject, annotations map[
 	log.Debugln("VolumeMounts:", sidecarInject.VolumeMount)
 	patch = append(patch, addVolumeMount(pod.Spec.Containers[0].VolumeMounts, sidecarInject.VolumeMount, "/spec/containers/0/volumeMounts")...)
 	patch = append(patch, addContainer(pod.Spec.Containers, sidecarInject.Containers, "/spec/containers")...)
+	patch = append(patch, addContainer(pod.Spec.InitContainers, sidecarInject.InitContainers, "/spec/initContainers")...)
 	patch = append(patch, addVolume(pod.Spec.Volumes, sidecarInject.Volumes, "/spec/volumes")...)
 	patch = append(patch, updateAnnotation(pod.Annotations, annotations)...)
 
