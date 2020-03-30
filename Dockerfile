@@ -1,6 +1,8 @@
 FROM docker.io/golang:1.13
 LABEL authors="Mattia Mascia <mmascia@redhat.com>"
 
+RUN mkdir -p $GOPATH/src/github.com/openlab-red/mutating-webhook-vault-agent
+
 WORKDIR $GOPATH/src/github.com/openlab-red/mutating-webhook-vault-agent
 
 COPY . ./
