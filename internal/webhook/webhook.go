@@ -120,12 +120,6 @@ func (wk *WebHook) admit(ar v1.AdmissionReview) *v1.AdmissionResponse {
 		VaultRole:     GetAnnotationValue(pod, annotationVaultRole, "example"),
 	}
 
-	// agent ConfigMap for initContainers
-	_, err = agentConfigMap(VaultAgentInitConfigPrefix, pod, wk, &data, true)
-	if err != nil {
-		return ToAdmissionResponseError(err)
-	}
-
 	// agent configMap
 	_, err = agentConfigMap(VaultAgentConfigPrefix, pod, wk, &data, false)
 	if err != nil {

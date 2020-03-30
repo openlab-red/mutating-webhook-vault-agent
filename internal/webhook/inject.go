@@ -14,8 +14,6 @@ import (
 )
 
 const (
-	// VaultAgentInitConfigPrefix represents a prefix for the config map
-	VaultAgentInitConfigPrefix = "vault-agent-init-config"
 	// VaultAgentConfigPrefix represents a prefix for the config map
 	VaultAgentConfigPrefix = "vault-agent-config"
 )
