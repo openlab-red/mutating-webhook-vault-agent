@@ -1,18 +1,19 @@
 package engine
 
 import (
-	"github.com/gin-gonic/gin"
+	"context"
 	"net/http"
-	"github.com/spf13/viper"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-	"context"
-	"github.com/openlab-red/mutating-webhook-vault-agent/pkg/kubernetes"
+
+	"github.com/gin-gonic/gin"
+	"github.com/openlab-red/mutating-webhook-vault-agent/internal/logrus"
+	"github.com/spf13/viper"
 )
 
-var log = kubernetes.Log()
+var log = logrus.Log()
 
 func shutdown(engine *gin.Engine) {
 	srv := &http.Server{

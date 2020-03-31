@@ -76,20 +76,23 @@ objects:
     annotations:
       service.alpha.openshift.io/serving-cert-secret-name: vault-agent-webhook-cert
     labels:
-      app: vault-agent-webhook
+      app.kubernetes.io/instance: vault-agent-webhook
+      app.kubernetes.io/name: vault-agent-webhook
   spec:
     ports:
     - name: vault-agent-webhook
       port: 443
       targetPort: 8080
     selector:
-      app: vault-agent-webhook
+      app.kubernetes.io/instance: vault-agent-webhook
+      app.kubernetes.io/name: vault-agent-webhook
 
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
     labels:
-      app: vault-agent-webhook
+      app.kubernetes.io/instance: vault-agent-webhook
+      app.kubernetes.io/name: vault-agent-webhook
     name: vault-agent-webhook
   spec:
     triggers:
@@ -106,7 +109,8 @@ objects:
     template:
       metadata:
         labels:
-          app: vault-agent-webhook
+          app.kubernetes.io/instance: vault-agent-webhook
+          app.kubernetes.io/name: vault-agent-webhook
       spec:
         serviceAccountName: vault-agent-webhook
         containers:
@@ -145,29 +149,54 @@ objects:
           configMap:
             name: sidecar-agent
 
-- apiVersion: admissionregistration.k8s.io/v1beta1
+- apiVersion: admissionregistration.k8s.io/v1
   kind: MutatingWebhookConfiguration
   metadata:
     name: vault-agent-webhook
     labels:
-      app: vault-agent-webhook
+      app.kubernetes.io/instance: vault-agent-webhook
+      app.kubernetes.io/name: vault-agent-webhook
   webhooks:
     - name: vault-agent.vaultproject.io
+      sideEffects: None
+      admissionReviewVersions: ["v1", "v1beta1"]
+      timeoutSeconds: 5
       clientConfig:
         service:
           name: vault-agent-webhook
           namespace: ${VAULT_NAMESPACE}
           path: "/mutate"
+          port: 443
         caBundle: ${CA_BUNDLE}
       failurePolicy: Fail
       rules:
-        - operations: [ "CREATE" ]
+        - operations: ["CREATE", "UPDATE"]
           apiGroups: [""]
           apiVersions: ["v1"]
           resources: ["pods"]
       namespaceSelector:
         matchLabels:
-          vault-agent-webhook: enabled
+          sidecar.agent.vaultproject.io/webhook: enabled
+
+- apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: vault-agent-webhook
+    labels:
+      app.kubernetes.io/instance: vault-agent-webhook
+      app.kubernetes.io/name: vault-agent-webhook
+  spec:
+    podSelector:
+      matchLabels:
+        app.kubernetes.io/instance: vault-agent-webhook
+        app.kubernetes.io/name: vault-agent-webhook
+    ingress:
+      - from:
+          - namespaceSelector: {}
+        ports:
+        - port: 443
+          protocol: TCP
+
 parameters:
 - name: CA_BUNDLE
   description: Certificate Authority to validate the services
@@ -175,7 +204,7 @@ parameters:
 - name: VAULT_NAMESPACE
   description: Hashicorp Vault Namespace
   required: true
-  value: "hashicorp-vault"
+  value: "hashicorp"
 - name: GIN_MODE
   description: Start up mode of the http server
   required: true
@@ -184,4 +213,3 @@ parameters:
   description: Log level of the application
   required: true
   value: "INFO"
-

@@ -1,16 +1,19 @@
-package kubernetes
+package logrus
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"time"
 )
 
 var log = logrus.New()
 
+// GIN placeholder for GIN logs
 const GIN = "[GIN]"
 
+// InitLogrus initialise the log from LogRus
 func InitLogrus(engine *gin.Engine) {
 	level, err := logrus.ParseLevel(viper.GetString("log-level"))
 	if err != nil {
@@ -25,10 +28,12 @@ func InitLogrus(engine *gin.Engine) {
 
 }
 
+// Log returns log instance
 func Log() *logrus.Logger {
 	return log
 }
 
+// LoggerWithLogrus configure GIN to work with logrus
 func LoggerWithLogrus(log *logrus.Logger) gin.HandlerFunc {
 
 	return func(c *gin.Context) {

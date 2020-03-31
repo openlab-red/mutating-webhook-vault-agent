@@ -1,9 +1,9 @@
 package cmd
 
 import (
+	"github.com/openlab-red/mutating-webhook-vault-agent/internal/engine"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/openlab-red/mutating-webhook-vault-agent/pkg/engine"
 )
 
 var handlerCmd = &cobra.Command{

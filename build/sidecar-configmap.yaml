@@ -1,0 +1,158 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sidecar-agent
+data:
+  sidecarconfig.yaml: |
+    template: |-
+      volumeMounts:
+      - mountPath: /vault/config
+        name: vault-config
+      - mountPath: /vault/ca
+        name: vault-cabundle
+      - mountPath: /var/run/secrets/vaultproject.io
+        name: vault-agent-volume
+      initContainers:
+      - image: vault:1.3.2
+        name: vault-agent-init
+        ports:
+        - containerPort: 8200
+          name: vaultport
+          protocol: TCP
+        args:
+        - agent
+        - -log-level=debug
+        - -config=/vault/config/agent.config
+        - -exit-after-auth
+        env:
+        - name: SKIP_SETCAP
+          value: 'true'
+        volumeMounts:
+        - mountPath: /vault/config
+          name: vault-config
+        - mountPath: /vault/ca
+          name: vault-cabundle
+        - mountPath: /var/run/secrets/vaultproject.io
+          name: vault-agent-volume
+        securityContext:
+          capabilities:
+            drop:
+              - KILL
+              - MKNOD
+              - SETGID
+              - SETUID
+          privileged: false
+          runAsNonRoot: true
+          RunAsUser: {{ .Container.SecurityContext.RunAsUser }}
+        resources:
+          requests:
+            memory: 256Mi
+            cpu: 250m
+          limits:
+            memory: 256Mi
+            cpu: 250m   
+      containers:
+      - image: vault:1.3.2
+        name: vault-agent
+        ports:
+        - containerPort: 8200
+          name: vaultport
+          protocol: TCP
+        args:
+        - agent
+        - -log-level=debug
+        - -config=/vault/config/agent.config
+        env:
+        - name: SKIP_SETCAP
+          value: 'true'
+        volumeMounts:
+        - mountPath: /vault/config
+          name: vault-config
+        - mountPath: /vault/ca
+          name: vault-cabundle
+        - mountPath: /var/run/secrets/vaultproject.io
+          name: vault-agent-volume
+        securityContext:
+          capabilities:
+            drop:
+              - KILL
+              - MKNOD
+              - SETGID
+              - SETUID
+          privileged: false
+          runAsNonRoot: true
+          RunAsUser: {{ .Container.SecurityContext.RunAsUser }}
+        resources:
+          requests:
+            memory: 256Mi
+            cpu: 250m
+          limits:
+            memory: 256Mi
+            cpu: 250m
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - sleep 5 && kill -SIGTERM $(pidof vault)
+      volumes:
+      - name: vault-agent-volume
+        emptyDir:
+          medium: Memory
+      - configMap:
+          name: vault-agent-config-{{ .Name }}
+        name: vault-config
+      - configMap:
+          name: vault-agent-cabundle
+        name: vault-cabundle
+    template.ctmpl: |
+      {{"{{"}} with secret "{{ .VaultSecret }}" {{"}}"}}
+      secret:
+        example:
+          password: {{"{{"}} .Data.password {{"}}"}}
+      {{"{{"}} end {{"}}"}}
+    agent.config: |
+
+        vault {
+            ca_path = "/vault/ca/service-ca.crt"
+            address = "https://vault.hashicorp.svc.cluster.local:8200"
+        }
+
+        pid_file = "/var/run/secrets/vaultproject.io/pid"
+
+        auto_auth {
+                method "kubernetes"  {
+                        type = "kubernetes"
+                        mount_path = "auth/kubernetes"
+                        config = {
+                                role = "{{ .VaultRole }}"
+                                jwt = "@/var/run/secrets/kubernetes.io/serviceaccount/token"
+                        }
+                }
+
+                sink "file" {
+                        type = "file"
+                        config = {
+                                path = "/var/run/secrets/vaultproject.io/token"
+                        }
+                }
+        }
+
+        template {
+            source      = "/vault/config/template.ctmpl"
+            destination = "/var/run/secrets/vaultproject.io/{{ .VaultFileName }}"
+        }
+
+---
+
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: vault-agent-webhook-cabundle
+  labels:
+    app.kubernetes.io/instance: vault-agent-webhook
+    app.kubernetes.io/name: vault-agent-webhook
+  annotations:
+    service.beta.openshift.io/inject-cabundle: "true"
+data: {}

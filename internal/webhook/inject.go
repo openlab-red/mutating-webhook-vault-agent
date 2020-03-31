@@ -1,21 +1,24 @@
-package kubernetes
+package webhook
 
 import (
-	"strings"
 	"bytes"
-	"github.com/sirupsen/logrus"
+	"encoding/json"
+	"strings"
 	"text/template"
+
 	"github.com/ghodss/yaml"
+	"github.com/openlab-red/mutating-webhook-vault-agent/pkg/kube"
+	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"encoding/json"
 )
 
 const (
-	VaultAgentConfig = "vault-agent-config"
+	// VaultAgentConfigPrefix represents a prefix for the config map
+	VaultAgentConfigPrefix = "vault-agent-config"
 )
 
-func injectData(data *SidecarData, config *SidecarConfig) (*SidecarInject, error) {
+func inject(data *SidecarData, config *SidecarConfig) (*SidecarInject, error) {
 
 	sic := SidecarInject{}
 
@@ -30,19 +33,17 @@ func injectData(data *SidecarData, config *SidecarConfig) (*SidecarInject, error
 	}
 
 	// TODO: seems not working the inject to volumeMounts
-
 	var volumeMounts []corev1.VolumeMount
 	volumeMount := FindVolumeMount(sic.Containers[0].VolumeMounts, "vault-agent-volume")
 	volumeMounts = append(volumeMounts, volumeMount)
 	sic.VolumeMount = volumeMounts
-
 	//
 
 	log.Debugln("SidecarInject: ", sic)
 	return &sic, nil
 }
 
-func injectRequired(ignored []string, pod *corev1.Pod) bool {
+func isRequired(ignored []string, pod *corev1.Pod) bool {
 	var status, inject string
 	required := false
 	metadata := pod.ObjectMeta
@@ -86,19 +87,28 @@ func injectRequired(ignored []string, pod *corev1.Pod) bool {
 	return required
 }
 
-func ensureConfigMap(pod corev1.Pod, wk *WebHook, sidecarData *SidecarData) (*corev1.ConfigMap, error) {
-	client := Client()
+func agentConfigMap(prefix string, pod corev1.Pod, wk *WebHook, sidecarData *SidecarData, init bool) (*corev1.ConfigMap, error) {
+	client := kube.Client()
 	configMaps := client.CoreV1().ConfigMaps(pod.Namespace)
 
-	name := VaultAgentConfig + "-" + sidecarData.Name
 	data := make(map[string]string)
+	name := prefix + "-" + sidecarData.Name
+	sidecarData.VaultInit = init
+
 	tmpl, err := executeTemplate(wk.SidecarConfig.VaultAgentConfig, sidecarData)
+
 	if err != nil {
 		return nil, err
 	}
-	data[VaultAgentConfig] = string(tmpl.Bytes())
+	data["agent.config"] = string(tmpl.Bytes())
 
+	tmpl, err = executeTemplate(wk.SidecarConfig.VaultAgentTemplate, sidecarData)
+	if err != nil {
+		return nil, err
+	}
+	data["template.ctmpl"] = string(tmpl.Bytes())
 	currentConfigMap, err := configMaps.Get(name, metav1.GetOptions{})
+
 	if err != nil {
 		annotations := make(map[string]string)
 		annotations["vault-agent.vaultproject.io"] = "generated"
@@ -112,12 +122,30 @@ func ensureConfigMap(pod corev1.Pod, wk *WebHook, sidecarData *SidecarData) (*co
 			Data: data,
 		}
 		return configMaps.Create(&configMap)
-	} else {
-		currentConfigMap.Data = data
-		return configMaps.Update(currentConfigMap)
 	}
-	return nil, nil
+	currentConfigMap.Data = data
+	return configMaps.Update(currentConfigMap)
+}
 
+func caBundleConfigMap(pod corev1.Pod, wk *WebHook, sidecarData *SidecarData) (*corev1.ConfigMap, error) {
+	client := kube.Client()
+	configMaps := client.CoreV1().ConfigMaps(pod.Namespace)
+
+	currentConfigMap, err := configMaps.Get("vault-agent-cabundle", metav1.GetOptions{})
+	if err != nil {
+		annotations := make(map[string]string)
+		annotations["service.beta.openshift.io/inject-cabundle"] = "true"
+
+		configMap := corev1.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "vault-agent-cabundle",
+				Namespace:   pod.Namespace,
+				Annotations: annotations,
+			},
+		}
+		return configMaps.Create(&configMap)
+	}
+	return currentConfigMap, err
 }
 
 func executeTemplate(source string, data interface{}) (*bytes.Buffer, error) {
@@ -139,7 +167,7 @@ func executeTemplate(source string, data interface{}) (*bytes.Buffer, error) {
 	return &tmpl, nil
 }
 
-func unmarshalTemplate(tmpl *bytes.Buffer, target interface{}) (error) {
+func unmarshalTemplate(tmpl *bytes.Buffer, target interface{}) error {
 	log.Debugf("Template executed, %s", string(tmpl.Bytes()))
 
 	if err := yaml.Unmarshal(tmpl.Bytes(), &target); err != nil {

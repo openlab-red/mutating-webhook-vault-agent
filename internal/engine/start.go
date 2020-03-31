@@ -2,14 +2,16 @@ package engine
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/openlab-red/mutating-webhook-vault-agent/internal/logrus"
+	"github.com/openlab-red/mutating-webhook-vault-agent/internal/webhook"
 	"github.com/spf13/viper"
-	"github.com/openlab-red/mutating-webhook-vault-agent/pkg/kubernetes"
 )
 
+// Start GIN Server Engine
 func Start() {
 	var engine = gin.New()
 
-	kubernetes.InitLogrus(engine)
+	logrus.InitLogrus(engine)
 
 	engine.GET("/health", health)
 
@@ -22,10 +24,10 @@ func Start() {
 
 func hook(engine *gin.Engine) {
 
-	sidecarConfig := kubernetes.SidecarConfig{}
-	kubernetes.Load("/var/run/secrets/kubernetes.io/config/sidecarconfig.yaml", &sidecarConfig)
+	sidecarConfig := webhook.SidecarConfig{}
+	webhook.Load("/var/run/secrets/kubernetes.io/config/sidecarconfig.yaml", &sidecarConfig)
 
-	wk := kubernetes.WebHook{
+	wk := webhook.WebHook{
 		SidecarConfig: &sidecarConfig,
 	}
 
