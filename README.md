@@ -1,7 +1,10 @@
 # Mutating Webhook Vault Agent
 
 # DEPRECATED
- In favour of [Vault Agent Injector ](https://github.com/hashicorp/vault-k8s)
+
+In favour of [Vault Agent Injector ](https://github.com/hashicorp/vault-k8s)
+
+More info how to use with OpenShift: https://github.com/openlab-red/hashicorp-vault-for-openshift
 
 ## Build Vault Agent Webhook container
 
